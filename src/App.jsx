@@ -457,11 +457,46 @@ function ToolsPage() {
     <div style={styles.section}>
       <h2 style={styles.h2}>Tools</h2>
       <p style={styles.subhead}>Homework and learning tools</p>
+
+      {/* Cobie's full maths app */}
+      <div style={{ ...styles.card, padding: 32, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: C.text, marginBottom: 4 }}>
+              Cobie's Maths App
+            </h3>
+            <p style={{ color: C.muted, fontSize: 13 }}>
+              Addition, subtraction, multiplication & division up to 12 · Scoring · Leaderboard
+            </p>
+          </div>
+          <a
+            href="/cobies-maths.html"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: 'inline-block',
+              background: C.nav,
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: 10,
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+              letterSpacing: 0.5,
+              flexShrink: 0,
+            }}
+          >
+            Open App →
+          </a>
+        </div>
+      </div>
+
+      {/* Quick maths grid */}
       <div style={{ ...styles.card, padding: 32 }}>
         <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: C.text, marginBottom: 4 }}>
           Maths Grid
         </h3>
-        <p style={{ color: C.muted, fontSize: 13, marginBottom: 24 }}>Practise addition and subtraction facts 1–10</p>
+        <p style={{ color: C.muted, fontSize: 13, marginBottom: 24 }}>Quick practice — addition and subtraction facts 1–10</p>
         <MathsGrid />
       </div>
     </div>
