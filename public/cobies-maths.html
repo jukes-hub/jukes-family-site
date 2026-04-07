@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Cobie's Maths" />
+<meta name="theme-color" content="#534AB7" />
+<title>Cobie's Maths</title>
+<script>
+(function(){
+  var c=document.createElement('canvas');c.width=180;c.height=180;
+  var x=c.getContext('2d');
+  x.fillStyle='#534AB7';x.beginPath();x.roundRect(0,0,180,180,36);x.fill();
+  x.fillStyle='#fff';x.font='bold 90px system-ui';
+  x.textAlign='center';x.textBaseline='middle';x.fillText('★',90,90);
+  var l=document.createElement('link');l.rel='apple-touch-icon';l.href=c.toDataURL();
+  document.head.appendChild(l);
+})();
+</script>
+<style>
+:root{
+  --p:#534AB7;--pl:#EEEDFE;--pm:#7F77DD;--pd:#3C3489;--pb:#AFA9EC;
+  --g:#0F6E56;--gl:#E1F5EE;--gm:#1D9E75;
+  --r:#A32D2D;--rl:#FCEBEB;--rm:#E24B4A;
+  --am:#B4420C;
+  --tx:#1a1a1a;--txm:#666;--bg:#f5f4ff;--cb:#fff;--bd:rgba(0,0,0,0.12);--sf:#f0eff8;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+@media(prefers-color-scheme:dark){
+  :root{--tx:#f0eeff;--txm:#aaa8cc;--bg:#16142a;--cb:#211f3a;--bd:rgba(255,255,255,0.12);--sf:#1c1a32;
+    --pl:#2a2550;--pb:#5a54a8;--gl:#0a2e25;--rl:#2e1010;}
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;width:100%;background:var(--bg);font-family:-apple-system,'Helvetica Neue',sans-serif;color:var(--tx);overflow-x:hidden;}
+#app{min-height:100vh;padding:calc(var(--st) + 14px) 14px calc(var(--sb) + 14px);max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+
+.hdr{text-align:center;padding:2px 0;}
+.hdr h1{font-size:21px;font-weight:700;color:var(--p);}
+.hdr p{font-size:12px;color:var(--txm);margin-top:2px;}
+
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.tab{padding:8px 2px;border:1.5px solid var(--bd);border-radius:10px;background:var(--cb);color:var(--txm);font-size:11px;font-weight:600;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s;}
+.tab.on{background:var(--pl);border-color:var(--pb);color:var(--pd);}
+
+/* Table selector */
+.tsel{background:var(--cb);border-radius:12px;padding:10px 12px;border:1px solid var(--bd);}
+.tsel-lbl{font-size:10px;font-weight:700;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+.tpills{display:flex;gap:5px;flex-wrap:wrap;}
+.tpill{padding:4px 9px;font-size:13px;font-weight:600;border:1.5px solid var(--bd);border-radius:16px;background:var(--sf);color:var(--txm);cursor:pointer;transition:all .12s;-webkit-user-select:none;user-select:none;}
+.tpill:active{transform:scale(0.93);}
+.tpill.on{background:var(--pl);border-color:var(--pb);color:var(--pd);}
+
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.sc{background:var(--cb);border-radius:12px;padding:9px 6px;text-align:center;border:1px solid var(--bd);}
+.sl{font-size:10px;color:var(--txm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.sv{font-size:22px;font-weight:700;color:var(--tx);margin-top:1px;}
+.sv.fire{color:var(--am);}
+
+.pbar-wrap{height:5px;background:var(--sf);border-radius:3px;overflow:hidden;}
+.pbar{height:100%;background:var(--pm);border-radius:3px;transition:width .4s ease;}
+
+.seq-row{display:flex;align-items:center;justify-content:center;gap:8px;min-height:22px;flex-wrap:wrap;}
+.seq-dot{width:12px;height:12px;border-radius:50%;background:var(--bd);transition:all .3s;cursor:pointer;flex-shrink:0;}
+.seq-dot.done{background:var(--gm);}
+.seq-dot.wrong{background:var(--rm);}
+.seq-dot.retry{background:#EF9F27;}
+.seq-dot.active{background:var(--p);transform:scale(1.25);cursor:default;}
+.seq-lbl{font-size:11px;color:var(--txm);font-weight:500;}
+.dot-tip{background:var(--cb);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;text-align:center;font-size:15px;font-weight:600;color:var(--tx);display:flex;align-items:center;justify-content:center;gap:8px;}
+.tip-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tip-done{background:var(--gm);}
+.tip-retry{background:#EF9F27;}
+.tip-wrong{background:var(--rm);}
+.tip-active{background:var(--p);}
+
+.qcard{background:var(--cb);border-radius:16px;border:1px solid var(--bd);padding:18px 14px 16px;text-align:center;}
+.badge-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;min-height:24px;}
+.badge{display:inline-block;border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.badge.orig{background:var(--pl);color:var(--pd);border:1px solid var(--pb);}
+.badge.opp{background:var(--gl);color:var(--g);border:1px solid #9FE1CB;}
+.qtext{font-size:40px;font-weight:700;letter-spacing:1px;margin-bottom:14px;line-height:1.1;}
+.qtext .sym{color:var(--p);}
+.ainput{width:130px;font-size:34px;font-weight:700;text-align:center;padding:8px 10px;border:2.5px solid var(--bd);border-radius:14px;background:var(--sf);color:var(--tx);outline:none;transition:border-color .15s,background .15s;-webkit-appearance:none;appearance:none;}
+.ainput:focus{border-color:var(--pm);background:var(--cb);}
+.ainput.ok{border-color:var(--gm);background:var(--gl);color:var(--g);}
+.ainput.no{border-color:var(--rm);background:var(--rl);color:var(--r);animation:shk .35s ease;}
+@keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}60%{transform:translateX(8px)}80%{transform:translateX(-4px)}}
+.fb{min-height:32px;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:14px;font-weight:600;}
+
+.ff{background:var(--pl);border-radius:14px;padding:11px 12px;border:1px solid var(--pb);}
+.fftitle{font-size:10px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;text-align:center;}
+.ffpills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+.pill{background:var(--cb);border:1px solid var(--pb);border-radius:20px;padding:5px 11px;font-size:13px;font-weight:600;color:var(--pd);white-space:nowrap;}
+.pill.cur{background:var(--p);color:#fff;border-color:var(--p);}
+.pill.done{background:var(--gm);color:#fff;border-color:var(--gm);}
+
+.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.nb{padding:15px 6px;font-size:20px;font-weight:600;border:1.5px solid var(--bd);border-radius:12px;background:var(--cb);color:var(--tx);cursor:pointer;transition:background .1s,transform .08s;-webkit-user-select:none;user-select:none;}
+.nb:active{transform:scale(0.91);background:var(--sf);}
+.nb.clr{color:var(--r);background:var(--rl);border-color:#F7C1C1;}
+.nb.ent{color:var(--g);background:var(--gl);border-color:#9FE1CB;}
+.nb.nxt{background:var(--p);color:#fff;border-color:var(--p);font-size:14px;font-weight:700;}
+
+.toast{position:fixed;bottom:calc(var(--sb) + 22px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--p);color:#fff;padding:9px 22px;border-radius:22px;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Print panel */
+.print-panel{background:var(--cb);border-radius:14px;border:1px solid var(--bd);padding:12px 14px;}
+.print-title{font-size:11px;font-weight:700;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.print-ops{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}
+.pop{padding:8px 4px;font-size:13px;font-weight:600;border:1.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--txm);cursor:pointer;text-align:center;transition:all .12s;}
+.pop.on{background:var(--pl);border-color:var(--pb);color:var(--pd);}
+.print-row{display:flex;gap:7px;}
+.print-style{display:flex;gap:6px;flex:1;}
+.psty{flex:1;padding:7px 4px;font-size:12px;font-weight:600;border:1.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--txm);cursor:pointer;text-align:center;transition:all .12s;}
+.psty.on{background:var(--gl);border-color:#9FE1CB;color:var(--g);}
+.print-btn{padding:8px 18px;font-size:13px;font-weight:700;border:none;border-radius:10px;background:var(--p);color:#fff;cursor:pointer;white-space:nowrap;transition:background .12s;}
+.print-btn:active{transform:scale(0.97);}
+
+/* Timer panel */
+.timer-panel{background:var(--cb);border-radius:14px;border:1px solid var(--bd);padding:12px 14px;}
+.timer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.timer-title{font-size:11px;font-weight:700;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;}
+.toggle-wrap{display:flex;align-items:center;gap:8px;}
+.toggle-lbl{font-size:12px;color:var(--txm);}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--bd);border-radius:11px;transition:background .2s;}
+.toggle input:checked+.toggle-track{background:var(--p);}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle input:checked~.toggle-thumb{transform:translateX(18px);}
+.timer-body{display:flex;flex-direction:column;gap:8px;}
+.timer-modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.tmode{padding:7px 4px;font-size:12px;font-weight:600;border:1.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--txm);cursor:pointer;text-align:center;transition:all .12s;}
+.tmode.on{background:var(--pl);border-color:var(--pb);color:var(--pd);}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row label{font-size:11px;color:var(--txm);white-space:nowrap;}
+.slider-row input[type=range]{flex:1;}
+.slider-val{font-size:13px;font-weight:700;color:var(--p);min-width:36px;text-align:right;}
+
+/* Question countdown bar */
+.qbar-wrap{height:5px;background:var(--sf);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.qbar{height:100%;border-radius:3px;transition:background .3s;background:var(--gm);}
+
+/* Session clock */
+.session-clock{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 0;}
+.clock-val{font-size:22px;font-weight:700;color:var(--p);}
+.clock-lbl{font-size:11px;color:var(--txm);font-weight:500;}
+.clock-warn{color:var(--rm);}
+
+/* Session end overlay */
+.sesh-end{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:900;padding:20px;}
+.sesh-card{background:var(--cb);border-radius:20px;padding:28px 24px;text-align:center;max-width:320px;width:100%;}
+.sesh-card h2{font-size:22px;font-weight:700;color:var(--p);margin-bottom:6px;}
+.sesh-card p{font-size:14px;color:var(--txm);margin-bottom:18px;}
+.sesh-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;}
+.sesh-stat{background:var(--sf);border-radius:10px;padding:10px 4px;}
+.sesh-stat-v{font-size:24px;font-weight:700;color:var(--tx);}
+.sesh-stat-l{font-size:10px;color:var(--txm);font-weight:600;text-transform:uppercase;}
+.sesh-again{padding:11px 28px;background:var(--p);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;}
+
+/* Hard mode & leaderboard toolbar */
+.toolbar{display:flex;gap:8px;}
+.tool-btn{flex:1;padding:8px 6px;font-size:12px;font-weight:600;border:1.5px solid var(--bd);border-radius:10px;background:var(--cb);color:var(--txm);cursor:pointer;text-align:center;transition:all .12s;}
+.tool-btn:active{transform:scale(0.96);}
+.tool-btn.hard-on{background:#FAECE7;border-color:#F0997B;color:#993C1D;}
+.tool-btn.lb-btn{background:var(--pl);border-color:var(--pb);color:var(--pd);}
+
+/* Save score row in session end */
+.save-row{display:flex;gap:8px;margin-bottom:14px;}
+.save-row input{flex:1;padding:9px 12px;font-size:14px;border:1.5px solid var(--bd);border-radius:10px;background:var(--sf);color:var(--tx);outline:none;}
+.save-row input:focus{border-color:var(--pm);}
+.save-score-btn{padding:9px 16px;background:var(--gm);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+/* Leaderboard overlay */
+.lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:910;padding:20px;}
+.lb-card{background:var(--cb);border-radius:20px;padding:24px 20px;max-width:340px;width:100%;max-height:85vh;display:flex;flex-direction:column;}
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.lb-header h2{font-size:19px;font-weight:700;color:var(--p);}
+.lb-close{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--bd);background:var(--sf);color:var(--txm);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.lb-clear{font-size:11px;color:var(--r);cursor:pointer;font-weight:600;padding:2px 0;}
+.lb-list{overflow-y:auto;flex:1;}
+.lb-empty{text-align:center;color:var(--txm);font-size:14px;padding:24px 0;}
+.lb-row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;padding:9px 4px;border-bottom:0.5px solid var(--bd);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-size:13px;font-weight:700;color:var(--txm);text-align:center;}
+.lb-rank.gold{color:#BA7517;}
+.lb-rank.silver{color:#888780;}
+.lb-rank.bronze{color:#993C1D;}
+.lb-name{font-size:14px;font-weight:600;color:var(--tx);}
+.lb-meta{font-size:11px;color:var(--txm);}
+.lb-score-col{text-align:right;}
+.lb-score-val{font-size:16px;font-weight:700;color:var(--p);}
+.lb-score-sub{font-size:10px;color:var(--txm);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <h1>⭐ Cobie's Maths</h1>
+    <p>Build your number superpowers!</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="setMode('add')">＋<br>Add</button>
+    <button class="tab" onclick="setMode('sub')">－<br>Sub</button>
+    <button class="tab" onclick="setMode('mul')">✕<br>Times</button>
+    <button class="tab" onclick="setMode('div')">÷<br>Divide</button>
+    <button class="tab" onclick="setMode('mix')">🎲<br>Mix!</button>
+  </div>
+
+  <div class="toolbar">
+    <button class="tool-btn" id="hard-btn" onclick="toggleHardMode()">🧠 Hard mode: Off</button>
+    <button class="tool-btn" onclick="showSavePrompt()">💾 Save Score</button>
+    <button class="tool-btn lb-btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
+  </div>
+
+  <!-- Table selector — shown only for Times and Divide modes -->
+  <div class="tsel" id="tsel" style="display:none">
+    <div class="tsel-lbl" id="tsel-lbl">Times table:</div>
+    <div class="tpills" id="tpills"></div>
+  </div>
+
+  <div class="stats">
+    <div class="sc"><div class="sl">Score</div><div class="sv" id="score">0</div></div>
+    <div class="sc"><div class="sl">Correct</div><div class="sv" id="corr">0</div></div>
+    <div class="sc"><div class="sl">Streak 🔥</div><div class="sv fire" id="streak">0</div></div>
+  </div>
+
+  <!-- Session clock (shown only in session mode) -->
+  <div class="session-clock" id="session-clock" style="display:none">
+    <span class="clock-lbl">Time left</span>
+    <span class="clock-val" id="clock-val">2:00</span>
+  </div>
+
+  <div class="pbar-wrap"><div class="pbar" id="pbar" style="width:0%"></div></div>
+  <div class="seq-row" id="seq-row"></div>
+  <div class="dot-tip" id="dot-tip" style="display:none"></div>
+
+  <div class="qcard">
+    <div class="badge-row" id="badge-row"></div>
+    <div class="qtext" id="qtext"></div>
+    <!-- Per-question countdown bar -->
+    <div class="qbar-wrap" id="qbar-wrap" style="display:none"><div class="qbar" id="qbar" style="width:100%"></div></div>
+    <input class="ainput" type="number" id="ans" placeholder="?" autocomplete="off"
+      inputmode="numeric" pattern="[0-9]*" onkeydown="hk(event)" />
+    <div class="fb" id="fb"></div>
+  </div>
+
+  <div class="ff" id="ff" style="display:none">
+    <div class="fftitle">Fact family</div>
+    <div class="ffpills" id="ffpills"></div>
+  </div>
+
+  <div class="numpad">
+    <button class="nb" ontouchstart="nt('7')" onclick="nt('7')">7</button>
+    <button class="nb" ontouchstart="nt('8')" onclick="nt('8')">8</button>
+    <button class="nb" ontouchstart="nt('9')" onclick="nt('9')">9</button>
+    <button class="nb clr" ontouchstart="nt('C')" onclick="nt('C')">⌫</button>
+    <button class="nb" ontouchstart="nt('4')" onclick="nt('4')">4</button>
+    <button class="nb" ontouchstart="nt('5')" onclick="nt('5')">5</button>
+    <button class="nb" ontouchstart="nt('6')" onclick="nt('6')">6</button>
+    <button class="nb ent" id="entbtn" ontouchstart="nt('→')" onclick="nt('→')">→</button>
+    <button class="nb" ontouchstart="nt('1')" onclick="nt('1')">1</button>
+    <button class="nb" ontouchstart="nt('2')" onclick="nt('2')">2</button>
+    <button class="nb" ontouchstart="nt('3')" onclick="nt('3')">3</button>
+    <button class="nb" ontouchstart="nt('0')" onclick="nt('0')">0</button>
+  </div>
+
+  <!-- Timer panel -->
+  <div class="timer-panel">
+    <div class="timer-header">
+      <span class="timer-title">Timer</span>
+      <div class="toggle-wrap">
+        <span class="toggle-lbl" id="timer-toggle-lbl">Off</span>
+        <label class="toggle">
+          <input type="checkbox" id="timer-toggle" onchange="toggleTimer(this.checked)">
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>
+    <div class="timer-body" id="timer-body" style="display:none">
+      <div class="timer-modes">
+        <button class="tmode on" id="tmode-q" onclick="setTimerMode('question')">⏱ Per question</button>
+        <button class="tmode" id="tmode-s" onclick="setTimerMode('session')">⏳ Session</button>
+      </div>
+      <div class="slider-row">
+        <label id="slider-lbl">Seconds:</label>
+        <input type="range" id="timer-slider" min="3" max="30" value="10" step="1" oninput="updateSlider()">
+        <span class="slider-val" id="slider-val">10s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print table panel -->
+  <div class="print-panel">
+    <div class="print-title">Print a practice table</div>
+    <div class="print-ops">
+      <button class="pop on" onclick="setPrintOp('add')">＋ Add</button>
+      <button class="pop" onclick="setPrintOp('sub')">－ Sub</button>
+      <button class="pop" onclick="setPrintOp('mul')">× Times</button>
+      <button class="pop" onclick="setPrintOp('div')">÷ Divide</button>
+    </div>
+    <div class="print-row">
+      <div class="print-style">
+        <button class="psty on" onclick="setPrintStyle('blank')">Blank</button>
+        <button class="psty" onclick="setPrintStyle('answers')">Answers</button>
+      </div>
+      <button class="print-btn" onclick="printTable()">Print ↗</button>
+    </div>
+  </div>
+
+</div>
+<div class="sesh-end" id="sesh-end" style="display:none">
+  <div class="sesh-card">
+    <h2>⏰ Time's up!</h2>
+    <p>Great work Cobie — here's how you did</p>
+    <div class="sesh-stats">
+      <div class="sesh-stat"><div class="sesh-stat-v" id="se-score">0</div><div class="sesh-stat-l">Score</div></div>
+      <div class="sesh-stat"><div class="sesh-stat-v" id="se-corr">0</div><div class="sesh-stat-l">Correct</div></div>
+      <div class="sesh-stat"><div class="sesh-stat-v" id="se-streak">0</div><div class="sesh-stat-l">Best streak</div></div>
+    </div>
+    <div class="save-row">
+      <input type="text" id="player-name" placeholder="Your name..." maxlength="16" />
+      <button class="save-score-btn" onclick="saveScore()">Save ★</button>
+    </div>
+    <button class="sesh-again" onclick="closeSessionEnd()">Play again!</button>
+  </div>
+</div>
+
+<div class="lb-overlay" id="save-prompt" style="display:none">
+  <div class="lb-card" style="max-height:none;">
+    <div class="lb-header">
+      <h2>💾 Save Score</h2>
+      <button class="lb-close" onclick="hideSavePrompt()">✕</button>
+    </div>
+    <div class="sesh-stats" style="margin-bottom:16px;">
+      <div class="sesh-stat"><div class="sesh-stat-v" id="sp-score">0</div><div class="sesh-stat-l">Score</div></div>
+      <div class="sesh-stat"><div class="sesh-stat-v" id="sp-corr">0</div><div class="sesh-stat-l">Correct</div></div>
+      <div class="sesh-stat"><div class="sesh-stat-v" id="sp-streak">0</div><div class="sesh-stat-l">Best streak</div></div>
+    </div>
+    <div class="save-row">
+      <input type="text" id="sp-name" placeholder="Your name..." maxlength="16" />
+      <button class="save-score-btn" onclick="saveScoreFromPrompt()">Save ★</button>
+    </div>
+  </div>
+</div>
+
+<div class="lb-overlay" id="lb-overlay" style="display:none">
+  <div class="lb-card">
+    <div class="lb-header">
+      <h2>🏆 Leaderboard</h2>
+      <button class="lb-close" onclick="hideLeaderboard()">✕</button>
+    </div>
+    <span class="lb-clear" onclick="clearLeaderboard()">Clear all scores</span>
+    <div class="lb-list" id="lb-list"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let mode='add', tableFilter=0, hardMode=false;
+let score=0, correctCount=0, streak=0, totalAnswered=0;
+let queue=[], currentQ=null, currentSet=[];
+let answered=false, hadWrongAttempt=false, firstAttemptDone=false;
+let setAnsweredFlags=[], doneStrs=[];
+let tableHistory=[]; // {eq, result} for specific-table mode, max 12 shown
+
+const PRAISES=['Brilliant! ★','Amazing! ✓','Superstar! ★','Fantastic! ✓','Nailed it! ★','Perfect! ✓','Great work! ★','Excellent! ✓','Yes! ★','Spot on! ✓'];
+const TRYAGAIN=['Try again!','Have another go!','Nearly — try once more!','So close — try again!'];
+
+// ── Question factory ────────────────────────────────────
+function mkAdd(a,b){return{op:'add',a,b,answer:a+b,display:`${a} ＋ ${b} = ?`,label:'Addition'};}
+function mkSub(a,b){return{op:'sub',a,b,answer:a-b,display:`${a} － ${b} = ?`,label:'Subtraction'};}
+function mkMul(a,b){return{op:'mul',a,b,answer:a*b,display:`${a} × ${b} = ?`,label:'Multiplication'};}
+function mkDiv(dividend,divisor){return{op:'div',a:dividend,b:divisor,answer:dividend/divisor,display:`${dividend} ÷ ${divisor} = ?`,label:'Division'};}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+function randomRoot(){
+  let ops=mode==='mix'?['add','sub','mul','div']:[mode];
+  let op=ops[Math.floor(Math.random()*ops.length)];
+  if(op==='add') return mkAdd(rand(0,12),rand(0,12));
+  if(op==='sub'){let a=rand(0,12);return mkSub(a,rand(0,a));}
+  if(op==='mul'){
+    if(tableFilter){
+      // One operand is always the chosen table number
+      let other=rand(0,12);
+      return Math.random()<0.5?mkMul(tableFilter,other):mkMul(other,tableFilter);
+    }
+    return mkMul(rand(0,12),rand(0,12));
+  }
+  // div
+  let divisor=tableFilter||rand(1,12);
+  return mkDiv(rand(0,12)*divisor,divisor);
+}
+
+function buildFollowUps(q){
+  let f=[];
+  if(q.op==='add'){
+    f.push(mkSub(q.answer,q.a));
+    if(q.a!==q.b) f.push(mkSub(q.answer,q.b));
+  } else if(q.op==='sub'){
+    f.push(mkAdd(q.answer,q.b));
+    if(q.answer!==q.b) f.push(mkAdd(q.b,q.answer));
+  } else if(q.op==='mul'){
+    let p=q.answer;
+    if(q.a===0||q.b===0){
+      if(q.a!==q.b) f.push(mkMul(q.b,q.a));
+    } else {
+      f.push(mkDiv(p,q.a));
+      if(q.a!==q.b) f.push(mkDiv(p,q.b));
+    }
+  } else {
+    let quot=q.answer,div=q.b;
+    f.push(mkMul(quot,div));
+    if(quot!==div) f.push(mkMul(div,quot));
+  }
+  return f;
+}
+
+function buildSet(){
+  let root=randomRoot();
+  let fups=tableFilter?[]:buildFollowUps(root);
+  let all=[root,...fups];
+  currentSet=all.map((q,i)=>({...q,setIdx:i,setTotal:all.length,isFollowUp:i>0}));
+  return currentSet;
+}
+
+// ── Fact family helpers ─────────────────────────────────
+function ffFacts(q){
+  if(q.op==='add'||q.op==='sub'){
+    let total=q.op==='add'?q.answer:q.a;
+    let x=q.op==='add'?q.a:(q.a-q.b);
+    let y=q.op==='add'?q.b:q.b;
+    if(x===y) return[`${x} ＋ ${y} = ${total}`,`${total} － ${x} = ${y}`];
+    return[`${x} ＋ ${y} = ${total}`,`${y} ＋ ${x} = ${total}`,`${total} － ${x} = ${y}`,`${total} － ${y} = ${x}`];
+  } else {
+    let prod=q.op==='mul'?q.answer:q.a;
+    let a=q.op==='mul'?q.a:q.answer;
+    let b=q.b;
+    if(a===0||b===0) return[`${a} × ${b} = ${prod}`,`${b} × ${a} = ${prod}`];
+    if(a===b) return[`${a} × ${b} = ${prod}`,`${prod} ÷ ${a} = ${b}`];
+    return[`${a} × ${b} = ${prod}`,`${b} × ${a} = ${prod}`,`${prod} ÷ ${a} = ${b}`,`${prod} ÷ ${b} = ${a}`];
+  }
+}
+function qStr(q){
+  if(q.op==='add') return`${q.a} ＋ ${q.b} = ${q.answer}`;
+  if(q.op==='sub') return`${q.a} － ${q.b} = ${q.answer}`;
+  if(q.op==='mul') return`${q.a} × ${q.b} = ${q.answer}`;
+  return`${q.a} ÷ ${q.b} = ${q.answer}`;
+}
+
+// ── Table selector ──────────────────────────────────────
+function buildTablePills(){
+  let h=`<button class="tpill on" ontouchstart="setTable(0)" onclick="setTable(0)">All</button>`;
+  for(let i=1;i<=12;i++){
+    h+=`<button class="tpill" ontouchstart="setTable(${i})" onclick="setTable(${i})">${i}</button>`;
+  }
+  document.getElementById('tpills').innerHTML=h;
+}
+
+function setTable(n){
+  tableFilter=n;
+  document.querySelectorAll('.tpill').forEach((b,i)=>b.classList.toggle('on',i===n));
+  resetQueue();
+  loadNext();
+}
+
+// ── Mode / navigation ───────────────────────────────────
+function setMode(m){
+  mode=m;
+  tableFilter=0;
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['add','sub','mul','div','mix'][i]===m));
+  const showSel=m==='mul'||m==='div';
+  document.getElementById('tsel').style.display=showSel?'block':'none';
+  if(showSel){
+    document.getElementById('tsel-lbl').textContent=m==='mul'?'Times table:':'Division table:';
+    document.querySelectorAll('.tpill').forEach((b,i)=>b.classList.toggle('on',i===0));
+  }
+  resetQueue();
+  loadNext();
+}
+
+function resetQueue(){
+  queue=[]; setAnsweredFlags=[]; doneStrs=[]; tableHistory=[];
+  hideDotTip();
+}
+
+function loadNext(){
+  if(queue.length===0){
+    let s=buildSet();
+    queue.push(...s);
+    setAnsweredFlags=new Array(s.length).fill(null);
+    doneStrs=[];
+  }
+  currentQ=queue.shift();
+  answered=false;
+  hadWrongAttempt=false;
+  firstAttemptDone=false;
+  hideDotTip();
+  if(timerOn&&timerMode==='question'&&timerStarted) startQTimer();
+  else document.getElementById('qbar-wrap').style.display='none';
+  const inp=document.getElementById('ans');
+  inp.value='';inp.className='ainput';inp.disabled=false;
+  renderQ();
+  inp.focus();
+}
+
+function renderQ(){
+  const q=currentQ;
+  const br=document.getElementById('badge-row');
+  br.innerHTML=q.isFollowUp
+    ?`<span class="badge opp">↩ ${q.label}</span>`
+    :`<span class="badge orig">${q.label}</span>`;
+  document.getElementById('qtext').innerHTML=
+    q.display.replace(/[＋－×÷]/g,s=>`<span class="sym">${s}</span>`);
+  document.getElementById('fb').innerHTML='';
+  document.getElementById('ff').style.display='none';
+  renderDots();
+  const eb=document.getElementById('entbtn');
+  eb.className='nb ent';eb.textContent='→';
+  updateProgress();
+}
+
+function renderDots(){
+  const row=document.getElementById('seq-row');
+  if(tableFilter){
+    // History mode: rolling record of past answers + active dot for current
+    let h=`<span class="seq-lbl">Recent:</span>`;
+    let shown=tableHistory.slice(-12);
+    shown.forEach((entry,i)=>{
+      let cls='seq-dot '+entry.result;
+      let idx=tableHistory.length-shown.length+i;
+      h+=`<div class="${cls}" data-idx="${idx}" onclick="dotClick(this)"></div>`;
+    });
+    // Active dot for current (not yet answered)
+    h+=`<div class="seq-dot active" onclick="showDotTip(currentQ.display,'active')"></div>`;
+    row.innerHTML=h;
+  } else {
+    // Set mode: show set progress
+    const q=currentQ;
+    if(q.setTotal<=1){row.innerHTML='';return;}
+    let h=`<span class="seq-lbl">Set:</span>`;
+    for(let i=0;i<q.setTotal;i++){
+      let flag=setAnsweredFlags[i];
+      let cls='seq-dot';
+      if(i===q.setIdx) cls+=' active';
+      else if(flag===true) cls+=' done';
+      else if(flag==='retry') cls+=' retry';
+      else if(flag===false) cls+=' wrong';
+      let eq=currentSet[i]?currentSet[i].display:'';
+      let result=i===q.setIdx?'active':(flag===true?'done':flag==='retry'?'retry':flag===false?'wrong':'pending');
+      h+=`<div class="${cls}" data-eq="${eq}" data-result="${result}" onclick="showDotTip('${eq}','${result}')"></div>`;
+    }
+    row.innerHTML=h;
+  }
+}
+
+function dotClick(el){
+  let idx=parseInt(el.getAttribute('data-idx'));
+  let entry=tableHistory[idx];
+  if(entry) showDotTip(entry.eq, entry.result);
+}
+
+function showDotTip(eq, result){
+  const tip=document.getElementById('dot-tip');
+  let dotCls='tip-dot tip-'+result;
+  let label=result==='done'?'First try!'
+    :result==='retry'?'Got it on retry'
+    :result==='wrong'?'Still working on it'
+    :'Current question';
+  tip.innerHTML=`<div class="${dotCls}"></div><span>${eq}</span><span style="font-size:12px;font-weight:400;color:var(--txm)">${label}</span>`;
+  tip.style.display='flex';
+}
+
+function hideDotTip(){
+  document.getElementById('dot-tip').style.display='none';
+}
+
+// ── Answer checking ─────────────────────────────────────
+function checkAnswer(){
+  // If already correctly answered, pressing → moves to next question
+  if(answered){loadNext();return;}
+
+  const inp=document.getElementById('ans');
+  const val=inp.value.trim();
+  if(val==='') return;
+  const guess=parseInt(val,10);
+  const fb=document.getElementById('fb');
+
+  // Count this question in totalAnswered only on the first attempt
+  if(!firstAttemptDone){
+    totalAnswered++;
+    firstAttemptDone=true;
+    // Kick off timer on very first answer
+    if(timerOn&&!timerStarted){
+      timerStarted=true;
+      if(timerMode==='session') startSeshTimer();
+    }
+  }
+
+  if(guess===currentQ.answer){
+    // ── Correct ──
+    answered=true;
+    if(timerOn&&timerMode==='question') stopQTimer();
+    streak++;correctCount++;score+=Math.max(1,streak);
+    if(streak>bestStreak) bestStreak=streak;
+    inp.className='ainput ok';
+    fb.innerHTML=`<span style="color:var(--gm)">${PRAISES[Math.floor(Math.random()*PRAISES.length)]}</span>`;
+    // Dot: green only if first-try correct; red if they needed attempts
+    setAnsweredFlags[currentQ.setIdx]=hadWrongAttempt?'retry':true;
+    doneStrs.push(qStr(currentQ));
+    if(tableFilter) tableHistory.push({eq:currentQ.display, result:hadWrongAttempt?'retry':'done'});
+    if(currentQ.setIdx===currentQ.setTotal-1){
+      setTimeout(()=>showToast('⭐ Fact family complete!'),400);
+    }
+    if(streak>0&&streak%5===0) setTimeout(()=>showToast(`🔥 ${streak} in a row!`),800);
+    inp.disabled=true;
+    if(!tableFilter&&!hardMode) showFF();
+    renderDots();
+    updateProgress();
+    // Next button
+    const eb=document.getElementById('entbtn');
+    eb.className='nb nxt';
+    eb.textContent=queue.length===0?(tableFilter?'Next →':'New set →'):'Next →';
+
+  } else {
+    // ── Wrong — break streak, try again ──
+    streak=0;
+    hadWrongAttempt=true;
+    if(timerOn&&timerMode==='question') stopQTimer();
+    setAnsweredFlags[currentQ.setIdx]=false;
+    renderDots();
+    inp.className='ainput no';
+    const msg=TRYAGAIN[Math.floor(Math.random()*TRYAGAIN.length)];
+    fb.innerHTML=`<span style="color:var(--r)">${msg}</span>`;
+    document.getElementById('streak').textContent=streak;
+    setTimeout(()=>{
+      inp.value=''; inp.className='ainput'; inp.focus();
+      if(timerOn&&timerMode==='question') startQTimer();
+    },380);
+  }
+
+  document.getElementById('score').textContent=score;
+  document.getElementById('corr').textContent=correctCount;
+  document.getElementById('streak').textContent=streak;
+  updateProgress();
+}
+
+function showFF(){
+  const facts=ffFacts(currentQ);
+  const cur=qStr(currentQ);
+  const pills=facts.map(f=>{
+    let cls='pill';
+    if(f===cur) cls='pill cur';
+    else if(doneStrs.includes(f)) cls='pill done';
+    return`<span class="${cls}">${f}</span>`;
+  }).join('');
+  document.getElementById('ffpills').innerHTML=pills;
+  document.getElementById('ff').style.display='block';
+}
+
+function updateProgress(){
+  const p=totalAnswered>0?Math.min(100,Math.round((correctCount/totalAnswered)*100)):0;
+  document.getElementById('pbar').style.width=p+'%';
+}
+
+function hk(e){}
+document.addEventListener('keyup',function(e){
+  if(e.key==='Enter') checkAnswer();
+});
+
+let taps={};
+function nt(v){
+  if(taps[v]) return;taps[v]=true;setTimeout(()=>delete taps[v],280);
+  if(v==='→'){checkAnswer();return;}
+  if(answered) return;
+  const inp=document.getElementById('ans');
+  if(v==='C'){inp.value=inp.value.slice(0,-1);return;}
+  if(inp.value.length<3) inp.value+=v;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── Timer ───────────────────────────────────────────────
+let timerOn=false, timerMode='question', timerDuration=10;
+let qTimerInterval=null, qTimerRemaining=0;
+let seshTimerInterval=null, seshRemaining=0;
+let bestStreak=0, timerStarted=false;
+
+function toggleTimer(on){
+  timerOn=on;
+  document.getElementById('timer-toggle-lbl').textContent=on?'On':'Off';
+  document.getElementById('timer-body').style.display=on?'flex':'none';
+  document.getElementById('timer-body').style.flexDirection='column';
+  document.getElementById('timer-body').style.gap='8px';
+  stopAllTimers();
+  if(on){
+    updateSlider();
+    resetAndStartTimer();
+  } else {
+    document.getElementById('qbar-wrap').style.display='none';
+    document.getElementById('session-clock').style.display='none';
+  }
+}
+
+function setTimerMode(m){
+  timerMode=m;
+  document.getElementById('tmode-q').classList.toggle('on',m==='question');
+  document.getElementById('tmode-s').classList.toggle('on',m==='session');
+  const sl=document.getElementById('timer-slider');
+  if(m==='question'){
+    sl.min=3;sl.max=30;sl.step=1;
+    sl.value=Math.min(30,Math.max(3,timerDuration));
+    document.getElementById('slider-lbl').textContent='Seconds:';
+  } else {
+    sl.min=1;sl.max=10;sl.step=1;
+    sl.value=Math.min(10,Math.max(1,Math.round(timerDuration/60)||2));
+    document.getElementById('slider-lbl').textContent='Minutes:';
+  }
+  updateSlider();
+  stopAllTimers();
+  resetAndStartTimer();
+}
+
+function updateSlider(){
+  const sl=document.getElementById('timer-slider');
+  const v=parseInt(sl.value);
+  if(timerMode==='question'){
+    timerDuration=v;
+    document.getElementById('slider-val').textContent=v+'s';
+  } else {
+    timerDuration=v*60;
+    document.getElementById('slider-val').textContent=v+'m';
+  }
+}
+
+function stopAllTimers(){
+  clearInterval(qTimerInterval); qTimerInterval=null;
+  clearInterval(seshTimerInterval); seshTimerInterval=null;
+}
+
+function resetAndStartTimer(){
+  timerStarted=false;
+  stopAllTimers();
+  document.getElementById('qbar-wrap').style.display='none';
+  document.getElementById('session-clock').style.display='none';
+}
+
+// Per-question timer
+function startQTimer(){
+  document.getElementById('session-clock').style.display='none';
+  const wrap=document.getElementById('qbar-wrap');
+  const bar=document.getElementById('qbar');
+  wrap.style.display='block';
+  clearInterval(qTimerInterval);
+  qTimerRemaining=timerDuration;
+  bar.style.width='100%';
+  bar.style.background='var(--gm)';
+  bar.style.transition='none';
+  // Animate smoothly
+  const total=timerDuration*1000;
+  const start=Date.now();
+  qTimerInterval=setInterval(()=>{
+    const elapsed=Date.now()-start;
+    const pct=Math.max(0,100-(elapsed/total*100));
+    bar.style.transition='none';
+    bar.style.width=pct+'%';
+    // Colour: green → amber → red
+    if(pct>50) bar.style.background='var(--gm)';
+    else if(pct>25) bar.style.background='#EF9F27';
+    else bar.style.background='var(--rm)';
+    if(elapsed>=total){
+      clearInterval(qTimerInterval);
+      bar.style.width='0%';
+      timeUpQuestion();
+    }
+  },50);
+}
+
+function stopQTimer(){
+  clearInterval(qTimerInterval); qTimerInterval=null;
+}
+
+function timeUpQuestion(){
+  if(answered) return;
+  // Treat as wrong attempt
+  streak=0; hadWrongAttempt=true;
+  if(!firstAttemptDone){totalAnswered++;firstAttemptDone=true;}
+  setAnsweredFlags[currentQ.setIdx]=false;
+  renderDots();
+  const inp=document.getElementById('ans');
+  inp.className='ainput no';
+  document.getElementById('fb').innerHTML=`<span style="color:var(--r)">⏰ Time's up — try again!</span>`;
+  document.getElementById('streak').textContent=streak;
+  document.getElementById('score').textContent=score;
+  document.getElementById('corr').textContent=correctCount;
+  updateProgress();
+  setTimeout(()=>{
+    inp.value=''; inp.className='ainput'; inp.focus();
+    startQTimer();
+  },600);
+}
+
+// Session timer
+function startSeshTimer(){
+  document.getElementById('qbar-wrap').style.display='none';
+  document.getElementById('session-clock').style.display='flex';
+  clearInterval(seshTimerInterval);
+  seshRemaining=timerDuration;
+  bestStreak=0;
+  updateClockDisplay();
+  seshTimerInterval=setInterval(()=>{
+    seshRemaining--;
+    updateClockDisplay();
+    if(seshRemaining<=0){
+      clearInterval(seshTimerInterval);
+      showSessionEnd();
+    }
+  },1000);
+}
+
+function stopSeshTimer(){
+  clearInterval(seshTimerInterval); seshTimerInterval=null;
+}
+
+function updateClockDisplay(){
+  const m=Math.floor(seshRemaining/60);
+  const s=seshRemaining%60;
+  const str=m+':'+(s<10?'0':'')+s;
+  const el=document.getElementById('clock-val');
+  el.textContent=str;
+  el.classList.toggle('clock-warn',seshRemaining<=10);
+}
+
+function showSessionEnd(){
+  document.getElementById('se-score').textContent=score;
+  document.getElementById('se-corr').textContent=correctCount;
+  document.getElementById('se-streak').textContent=bestStreak;
+  document.getElementById('sesh-end').style.display='flex';
+  const inp=document.getElementById('ans');
+  inp.disabled=true;
+}
+
+function closeSessionEnd(){
+  document.getElementById('sesh-end').style.display='none';
+  // Reset stats for new session
+  score=0;correctCount=0;streak=0;totalAnswered=0;bestStreak=0;timerStarted=false;
+  document.getElementById('score').textContent=0;
+  document.getElementById('corr').textContent=0;
+  document.getElementById('streak').textContent=0;
+  resetQueue(); loadNext();
+  if(timerOn&&timerMode==='session') startSeshTimer();
+}
+
+// ── Hard mode ────────────────────────────────────────────
+function toggleHardMode(){
+  hardMode=!hardMode;
+  const btn=document.getElementById('hard-btn');
+  btn.textContent='🧠 Hard mode: '+(hardMode?'On':'Off');
+  btn.classList.toggle('hard-on',hardMode);
+  // If turning off and current question already answered, show fact family now
+  if(!hardMode&&answered&&!tableFilter) showFF();
+  // If turning on, hide the fact family
+  if(hardMode) document.getElementById('ff').style.display='none';
+}
+
+function showSavePrompt(){
+  document.getElementById('sp-score').textContent=score;
+  document.getElementById('sp-corr').textContent=correctCount;
+  document.getElementById('sp-streak').textContent=bestStreak;
+  document.getElementById('save-prompt').style.display='flex';
+}
+function hideSavePrompt(){
+  document.getElementById('save-prompt').style.display='none';
+}
+function saveScoreFromPrompt(){
+  const nameEl=document.getElementById('sp-name');
+  const name=nameEl.value.trim()||'Cobie';
+  const modeLabel={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',mix:'Mixed'}[mode]||mode;
+  const entry={name,score,correct:correctCount,streak:bestStreak,mode:modeLabel,
+    duration:timerOn?timerDuration:0,
+    date:new Date().toLocaleDateString('en-NZ',{day:'numeric',month:'short'})};
+  const scores=getScores();
+  scores.push(entry);
+  scores.sort((a,b)=>b.score-a.score);
+  saveScores(scores.slice(0,50));
+  showToast('Score saved! ★');
+  nameEl.value='';
+  hideSavePrompt();
+}
+
+// ── Leaderboard ──────────────────────────────────────────
+function getScores(){
+  try{return JSON.parse(localStorage.getItem('cobies-scores')||'[]');}
+  catch(e){return[];}
+}
+function saveScores(arr){
+  try{localStorage.setItem('cobies-scores',JSON.stringify(arr));}catch(e){}
+}
+
+function saveScore(){
+  const name=(document.getElementById('player-name').value.trim()||'Cobie');
+  const modeLabel={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division',mix:'Mixed'}[mode]||mode;
+  const entry={
+    name, score, correct:correctCount, streak:bestStreak,
+    mode:modeLabel, duration:timerDuration,
+    date:new Date().toLocaleDateString('en-NZ',{day:'numeric',month:'short'})
+  };
+  const scores=getScores();
+  scores.push(entry);
+  scores.sort((a,b)=>b.score-a.score);
+  saveScores(scores.slice(0,50));
+  showToast('Score saved! ★');
+  document.getElementById('player-name').value='';
+}
+
+function showLeaderboard(){
+  renderLeaderboard();
+  document.getElementById('lb-overlay').style.display='flex';
+}
+function hideLeaderboard(){
+  document.getElementById('lb-overlay').style.display='none';
+}
+function clearLeaderboard(){
+  if(confirm('Clear all saved scores?')){
+    saveScores([]);
+    renderLeaderboard();
+  }
+}
+
+function renderLeaderboard(){
+  const scores=getScores();
+  const list=document.getElementById('lb-list');
+  if(scores.length===0){
+    list.innerHTML='<div class="lb-empty">No scores yet — complete a session to save one!</div>';
+    return;
+  }
+  const rankClass=['gold','silver','bronze'];
+  const rankSymbol=['🥇','🥈','🥉'];
+  list.innerHTML=scores.map((s,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rankClass[i]||''}">${i<3?rankSymbol[i]:i+1}</div>
+      <div>
+        <div class="lb-name">${s.name}</div>
+        <div class="lb-meta">${s.mode} · ${s.duration>=60?Math.round(s.duration/60)+'m':s.duration+'s'} · ${s.date}</div>
+      </div>
+      <div class="lb-score-col">
+        <div class="lb-score-val">${s.score}</div>
+        <div class="lb-score-sub">${s.correct} correct · streak ${s.streak}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Print table ─────────────────────────────────────────
+let printOp='add', printStyle='blank';
+
+function setPrintOp(op){
+  printOp=op;
+  document.querySelectorAll('.pop').forEach((b,i)=>b.classList.toggle('on',['add','sub','mul','div'][i]===op));
+}
+function setPrintStyle(s){
+  printStyle=s;
+  document.querySelectorAll('.psty').forEach((b,i)=>b.classList.toggle('on',['blank','answers'][i]===s));
+}
+
+function printTable(){
+  const op=printOp, blank=printStyle==='blank';
+  const labels={add:'Addition',sub:'Subtraction',mul:'Multiplication',div:'Division'};
+  const sym={add:'＋',sub:'－',mul:'×',div:'÷'};
+
+  // Build table data
+  // Rows = left operand (0-12 for add/sub/mul; 1-12 for div)
+  // Cols = right operand (0-12 for add/sub/mul; 0-12 quotient for div)
+  const rowStart=op==='div'?1:0;
+  const rows=[];
+  for(let r=rowStart;r<=12;r++) rows.push(r);
+  const cols=[];
+  for(let c=0;c<=12;c++) cols.push(c);
+
+  // Shuffle both axes so rote pattern learning is avoided
+  function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  shuffle(rows); shuffle(cols);
+
+  function cellVal(r,c){
+    if(op==='add') return r+c;
+    if(op==='sub') return r>=c?r-c:null; // null = invalid
+    if(op==='mul') return r*c;
+    if(op==='div') return c; // r÷r = c, displayed as r*c ÷ r = c
+    return '';
+  }
+  function cellLabel(r,c){
+    if(op==='div') return `${r*c} ÷ ${r}`;
+    return `${r} ${sym[op]} ${c}`;
+  }
+
+  let headerCells='<th></th>';
+  cols.forEach(c=>{ headerCells+=`<th>${c}</th>`; });
+
+  let bodyRows='';
+  rows.forEach(r=>{
+    let cells=`<th>${r}</th>`;
+    cols.forEach(c=>{
+      const v=cellVal(r,c);
+      if(v===null){
+        cells+='<td class="na">—</td>';
+      } else {
+        const ans=blank?'':''+v;
+        cells+=`<td><div class="ans">${ans}</div></td>`;
+      }
+    });
+    bodyRows+=`<tr>${cells}</tr>`;
+  });
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>${labels[op]} Table</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,Helvetica,sans-serif;padding:16px;background:#fff;color:#111;}
+  h1{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;color:#534AB7;}
+  p.sub{font-size:11px;text-align:center;color:#888;margin-bottom:12px;}
+  table{border-collapse:collapse;width:100%;table-layout:fixed;}
+  th{background:#f0eff8;font-size:11px;font-weight:700;color:#534AB7;padding:4px 2px;text-align:center;border:1px solid #ddd;}
+  td{border:1px solid #ddd;padding:9px 2px;text-align:center;vertical-align:middle;min-height:84px;}
+  td.na{background:#f8f8f8;color:#ccc;font-size:10px;}
+  .eq{font-size:9px;color:#888;line-height:1.2;}
+  .ans{font-size:13px;font-weight:600;color:#111;min-height:16px;margin:0 auto;}
+  @media print{
+    body{padding:8px;}
+    @page{margin:10mm;size:A4 landscape;}
+  }
+</style></head><body>
+<h1>${labels[op]} Table — ${blank?'Practice (fill in the answers)':'Answer Key'}</h1>
+<p class="sub">${op==='div'?'Row header = divisor. Column header = quotient. Cell shows the equation.':op==='sub'?'Row header − Column header (shaded cells are not applicable).':'Row header '+sym[op]+' Column header = ?'}</p>
+<table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table>
+<script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(w){ w.document.write(html); w.document.close(); }
+  else { showToast('Allow pop-ups to print'); }
+}
+
+// Offline service worker
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('cm-v5').then(c=>c.addAll([location.pathname]))));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!=='cm-v5').map(k=>caches.delete(k))))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const b=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(b),{scope:'/'}).catch(()=>{});
+}
+
+buildTablePills();
+loadNext();
+</script>
+</body>
+</html>
