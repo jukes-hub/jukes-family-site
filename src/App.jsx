@@ -239,7 +239,7 @@ function HomePage({ setPage }) {
 // ─── Photos ───────────────────────────────────────────────────────────────────
 // To link an album: replace the `url` value with your Google Photos shared album link.
 const PHOTO_ALBUMS = [
-  { name: 'Summer 2025–26',    date: 'Dec 2025',   thumb: '🏖️', count: 47,  url: 'https://photos.google.com' },
+  { name: 'Trial Photos',      date: '2026',       thumb: '🏖️', count: 47,  url: 'https://www.icloud.com/sharedalbum/#B2IG4TcsmGRQlrr' },
   { name: 'Swimming Carnival', date: 'Nov 2025',   thumb: '🏊', count: 23,  url: 'https://photos.google.com' },
   { name: 'Beach House Reno',  date: 'Ongoing',    thumb: '🏠', count: 89,  url: 'https://photos.google.com' },
   { name: 'Christmas 2024',    date: 'Dec 2024',   thumb: '🎄', count: 34,  url: 'https://photos.google.com' },
