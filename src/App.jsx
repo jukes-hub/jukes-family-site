@@ -169,12 +169,6 @@ function HomePage({ setPage }) {
     { name: 'Cobie',   icon: '🏊', note: 'Swimming & Gymnastics' },
     { name: 'Honor',   icon: '🤸', note: 'Swimming & Gymnastics' },
   ]
-  const sections = [
-    { label: 'PHOTOS',   icon: '📷', page: 'Photos'   },
-    { label: 'MESSAGES', icon: '💬', page: 'Messages' },
-    { label: 'LINKS',    icon: '🔗', page: 'Links'    },
-    { label: 'TOOLS',    icon: '📐', page: 'Tools'    },
-  ]
 
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
@@ -207,32 +201,18 @@ function HomePage({ setPage }) {
         ))}
       </div>
 
-      {/* Section shortcuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
-        {sections.map(s => (
-          <button
-            key={s.label}
-            onClick={() => setPage(s.page)}
-            style={{
-              background: C.nav,
-              borderRadius: 14,
-              padding: isMobile ? '18px 12px' : '22px 12px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-              boxShadow: '0 4px 16px rgba(26,61,71,0.22)',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(26,61,71,0.32)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,61,71,0.22)' }}
-          >
-            <span style={{ fontSize: isMobile ? 20 : 22 }}>{s.icon}</span>
-            <span style={{ color: 'white', fontSize: 12, letterSpacing: 1.5, fontWeight: 600 }}>{s.label}</span>
-          </button>
-        ))}
+      {/* Family photo */}
+      <div style={{
+        borderRadius: 20,
+        overflow: 'hidden',
+        boxShadow: '0 4px 24px rgba(26,61,71,0.15)',
+        border: '1px solid #e8ddd0',
+      }}>
+        <img
+          src="/family.jpeg"
+          alt="The Jukes family at the Australian Open"
+          style={{ width: '100%', display: 'block', objectFit: 'cover' }}
+        />
       </div>
     </div>
   )
