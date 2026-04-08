@@ -116,6 +116,9 @@
 
     <div class="card">
       <div class="controls" id="controls"></div>
+      <p id="mobile-hint" style="font-size:12px;color:#7a6a55;margin-bottom:14px;display:none;">
+        Showing 6 numbers from 1–12. Tap "New Grid" for a different set.
+      </p>
       <div class="table-wrap">
         <table id="grid"></table>
       </div>
@@ -125,8 +128,13 @@
   <script>
     let mode = 'addition';
     let showAnswers = false;
+    let gridIndex = 0;
     const inputs = {};
     const checked = {};
+
+    const isMobile = () => window.innerWidth < 640;
+    const MOBILE_COUNT = 6;
+    const ALL_NUMS = Array.from({ length: 12 }, (_, i) => i + 1); // 1–12
 
     function hashCode(str) {
       let hash = 0;
@@ -150,6 +158,12 @@
       return mode === 'addition' ? r + c : r - c;
     }
 
+    function getNumbers(seedSuffix) {
+      const seed = 'jukes-' + mode + '-' + gridIndex + seedSuffix;
+      const s = shuffled(ALL_NUMS, seed);
+      return isMobile() ? s.slice(0, MOBILE_COUNT) : s;
+    }
+
     function renderControls() {
       const el = document.getElementById('controls');
       el.innerHTML = '';
@@ -158,7 +172,7 @@
         const btn = document.createElement('button');
         btn.textContent = m.charAt(0).toUpperCase() + m.slice(1);
         btn.className = mode === m ? 'btn-primary' : 'btn-ghost';
-        btn.onclick = () => { mode = m; Object.keys(inputs).forEach(k => delete inputs[k]); Object.keys(checked).forEach(k => delete checked[k]); render(); };
+        btn.onclick = () => { mode = m; reset(); };
         el.appendChild(btn);
       });
 
@@ -169,30 +183,47 @@
       el.appendChild(showBtn);
 
       const resetBtn = document.createElement('button');
-      resetBtn.textContent = 'Reset';
+      resetBtn.textContent = isMobile() ? 'New Grid' : 'Reset';
       resetBtn.className = 'btn-ghost';
-      resetBtn.onclick = () => { Object.keys(inputs).forEach(k => delete inputs[k]); Object.keys(checked).forEach(k => delete checked[k]); render(); };
+      resetBtn.onclick = () => reset();
       el.appendChild(resetBtn);
+
+      // Mobile hint
+      const hint = document.getElementById('mobile-hint');
+      if (hint) {
+        hint.style.display = isMobile() ? 'block' : 'none';
+      }
+    }
+
+    function reset() {
+      Object.keys(inputs).forEach(k => delete inputs[k]);
+      Object.keys(checked).forEach(k => delete checked[k]);
+      gridIndex++;
+      render();
     }
 
     function renderGrid() {
-      const nums = Array.from({ length: 10 }, (_, i) => i + 1);
-      const seed = 'jukes-' + mode;
-      const rows = shuffled(nums, seed + 'r');
-      const cols = shuffled(nums, seed + 'c');
+      const rows = getNumbers('r');
+      const cols = getNumbers('c');
+      const cellSize = isMobile() ? 44 : 42;
 
       const table = document.getElementById('grid');
       table.innerHTML = '';
+      table.style.width = '100%';
 
       // Header row
       const thead = document.createElement('thead');
       const hrow = document.createElement('tr');
       const corner = document.createElement('th');
       corner.textContent = mode === 'addition' ? '+' : '−';
+      corner.style.width = cellSize + 'px';
+      corner.style.height = cellSize + 'px';
       hrow.appendChild(corner);
       cols.forEach(c => {
         const th = document.createElement('th');
         th.textContent = c;
+        th.style.width = cellSize + 'px';
+        th.style.height = cellSize + 'px';
         hrow.appendChild(th);
       });
       thead.appendChild(hrow);
@@ -204,10 +235,15 @@
         const tr = document.createElement('tr');
         const rowHead = document.createElement('td');
         rowHead.textContent = r;
+        rowHead.style.width = cellSize + 'px';
+        rowHead.style.height = cellSize + 'px';
         tr.appendChild(rowHead);
 
         cols.forEach(c => {
           const td = document.createElement('td');
+          td.style.width = cellSize + 'px';
+          td.style.height = cellSize + 'px';
+          td.style.padding = '2px';
           const answer = calc(r, c);
           const key = `${r}-${c}`;
 
@@ -228,6 +264,8 @@
             inp.value = inputs[key] || '';
             inp.style.display = 'block';
             inp.style.margin = '0 auto';
+            inp.style.width = (cellSize - 6) + 'px';
+            inp.style.height = (cellSize - 6) + 'px';
             inp.addEventListener('input', e => {
               const val = e.target.value;
               inputs[key] = val;
@@ -258,6 +296,7 @@
       renderGrid();
     }
 
+    window.addEventListener('resize', render);
     render();
   </script>
 </body>
