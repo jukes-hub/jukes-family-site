@@ -1,4 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+// ─── Mobile detection hook ────────────────────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+  return isMobile
+}
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -59,7 +70,56 @@ function shuffled(arr, seed) {
 // ─── Components ──────────────────────────────────────────────────────────────
 
 function Nav({ page, setPage }) {
+  const isMobile = useIsMobile()
+  const [menuOpen, setMenuOpen] = useState(false)
   const pages = ['Home', 'Photos', 'Messages', 'Links', 'Tools']
+
+  const logoStyle = {
+    fontFamily: "'Playfair Display', Georgia, serif",
+    fontSize: isMobile ? 20 : 26,
+    fontWeight: 600,
+    color: 'white',
+    letterSpacing: 5,
+    padding: '14px 0',
+  }
+
+  if (isMobile) {
+    return (
+      <nav style={{ background: C.nav, position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
+          <div style={logoStyle}>JUKES</div>
+          <button
+            onClick={() => setMenuOpen(m => !m)}
+            style={{ background: 'none', border: 'none', color: 'white', fontSize: 22, cursor: 'pointer', padding: '14px 0' }}
+          >
+            {menuOpen ? '✕' : '☰'}
+          </button>
+        </div>
+        {menuOpen && (
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            {pages.map(p => (
+              <button
+                key={p}
+                onClick={() => { setPage(p); setMenuOpen(false) }}
+                style={{
+                  display: 'block', width: '100%', padding: '14px 20px',
+                  border: 'none', background: page === p ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: page === p ? 'white' : 'rgba(255,255,255,0.7)',
+                  textAlign: 'left', fontSize: 15, letterSpacing: 1,
+                  fontWeight: page === p ? 600 : 400, cursor: 'pointer',
+                  borderLeft: page === p ? `3px solid ${C.accent}` : '3px solid transparent',
+                  fontFamily: "'DM Sans', system-ui, sans-serif",
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
+      </nav>
+    )
+  }
+
   return (
     <nav style={{
       background: C.nav,
@@ -72,16 +132,7 @@ function Nav({ page, setPage }) {
       zIndex: 100,
       boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
     }}>
-      <div style={{
-        fontFamily: "'Playfair Display', Georgia, serif",
-        fontSize: 26,
-        fontWeight: 600,
-        color: 'white',
-        letterSpacing: 5,
-        padding: '14px 0',
-      }}>
-        JUKES
-      </div>
+      <div style={logoStyle}>JUKES</div>
       <div style={{ display: 'flex', gap: 2 }}>
         {pages.map(p => (
           <button
@@ -111,6 +162,7 @@ function Nav({ page, setPage }) {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function HomePage({ setPage }) {
+  const isMobile = useIsMobile()
   const family = [
     { name: 'Steve',   icon: '⚓', note: 'Dad · Christchurch' },
     { name: 'Melanie', icon: '🌿', note: 'Mum · Christchurch' },
@@ -125,12 +177,12 @@ function HomePage({ setPage }) {
   ]
 
   return (
-    <div style={styles.section}>
+    <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       {/* Hero */}
-      <div style={{ textAlign: 'center', marginBottom: 44 }}>
+      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 44 }}>
         <h1 style={{
           fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 46,
+          fontSize: isMobile ? 34 : 46,
           color: C.text,
           letterSpacing: 2,
           marginBottom: 8,
@@ -138,25 +190,25 @@ function HomePage({ setPage }) {
         }}>
           The Jukes Family
         </h1>
-        <p style={{ color: C.muted, fontSize: 18 }}>
+        <p style={{ color: C.muted, fontSize: isMobile ? 15 : 18 }}>
           Sumner, Christchurch &nbsp;·&nbsp; New Zealand
         </p>
         <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
       </div>
 
       {/* Family cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 36 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14, marginBottom: isMobile ? 24 : 36 }}>
         {family.map(f => (
-          <div key={f.name} style={{ ...styles.card, padding: '24px 14px', textAlign: 'center' }}>
-            <div style={{ fontSize: 30, marginBottom: 8 }}>{f.icon}</div>
-            <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 19, fontWeight: 600, color: C.text }}>{f.name}</div>
+          <div key={f.name} style={{ ...styles.card, padding: isMobile ? '18px 12px' : '24px 14px', textAlign: 'center' }}>
+            <div style={{ fontSize: isMobile ? 24 : 30, marginBottom: 8 }}>{f.icon}</div>
+            <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isMobile ? 16 : 19, fontWeight: 600, color: C.text }}>{f.name}</div>
             <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{f.note}</div>
           </div>
         ))}
       </div>
 
       {/* Section shortcuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
         {sections.map(s => (
           <button
             key={s.label}
@@ -164,7 +216,7 @@ function HomePage({ setPage }) {
             style={{
               background: C.nav,
               borderRadius: 14,
-              padding: '22px 12px',
+              padding: isMobile ? '18px 12px' : '22px 12px',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
@@ -177,7 +229,7 @@ function HomePage({ setPage }) {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(26,61,71,0.32)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,61,71,0.22)' }}
           >
-            <span style={{ fontSize: 22 }}>{s.icon}</span>
+            <span style={{ fontSize: isMobile ? 20 : 22 }}>{s.icon}</span>
             <span style={{ color: 'white', fontSize: 12, letterSpacing: 1.5, fontWeight: 600 }}>{s.label}</span>
           </button>
         ))}
@@ -198,11 +250,12 @@ const PHOTO_ALBUMS = [
 ]
 
 function PhotosPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={styles.section}>
+    <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Photos</h2>
       <p style={styles.subhead}>Family albums — click to open in Google Photos</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 18 }}>
         {PHOTO_ALBUMS.map(a => (
           <a
             key={a.name}
@@ -254,8 +307,9 @@ const MESSAGES = [
 ]
 
 function MessagesPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={{ ...styles.section, maxWidth: 680 }}>
+    <div style={{ ...styles.section, maxWidth: 680, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Messages</h2>
       <p style={styles.subhead}>Family noticeboard</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -312,11 +366,12 @@ const LINK_CATEGORIES = [
 ]
 
 function LinksPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={styles.section}>
+    <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Links</h2>
       <p style={styles.subhead}>Useful family bookmarks and resources</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 18 }}>
         {LINK_CATEGORIES.map(cat => (
           <div key={cat.name} style={{ ...styles.card, padding: 22 }}>
             <h3 style={{
@@ -468,13 +523,14 @@ const TOOLS = [
 ]
 
 function ToolsPage() {
+  const isMobile = useIsMobile()
   return (
-    <div style={styles.section}>
+    <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Tools</h2>
       <p style={styles.subhead}>Homework and learning tools</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {TOOLS.map(t => (
-          <div key={t.name} style={{ ...styles.card, padding: '28px 32px' }}>
+          <div key={t.name} style={{ ...styles.card, padding: isMobile ? '20px' : '28px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{
@@ -485,7 +541,7 @@ function ToolsPage() {
                   {t.icon}
                 </div>
                 <div>
-                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 19, color: C.text, marginBottom: 4 }}>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isMobile ? 17 : 19, color: C.text, marginBottom: 4 }}>
                     {t.name}
                   </h3>
                   <p style={{ color: C.muted, fontSize: 13 }}>{t.description}</p>
@@ -505,6 +561,8 @@ function ToolsPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   flexShrink: 0,
+                  width: isMobile ? '100%' : 'auto',
+                  textAlign: 'center',
                 }}
               >
                 Open →
