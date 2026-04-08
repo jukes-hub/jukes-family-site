@@ -163,11 +163,11 @@ function Nav({ page, setPage }) {
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function HomePage({ setPage }) {
   const isMobile = useIsMobile()
-  const family = [
-    { name: 'Steve',   icon: '⚓', note: 'Dad · Christchurch' },
-    { name: 'Melanie', icon: '🌿', note: 'Mum · Christchurch' },
-    { name: 'Cobie',   icon: '🏊', note: 'Swimming & Gymnastics' },
-    { name: 'Honor',   icon: '🤸', note: 'Swimming & Gymnastics' },
+  const sections = [
+    { label: 'PHOTOS',   icon: '📷', page: 'Photos'   },
+    { label: 'MESSAGES', icon: '💬', page: 'Messages' },
+    { label: 'LINKS',    icon: '🔗', page: 'Links'    },
+    { label: 'TOOLS',    icon: '📐', page: 'Tools'    },
   ]
 
   return (
@@ -190,29 +190,47 @@ function HomePage({ setPage }) {
         <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
       </div>
 
-      {/* Family cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14, marginBottom: isMobile ? 24 : 36 }}>
-        {family.map(f => (
-          <div key={f.name} style={{ ...styles.card, padding: isMobile ? '18px 12px' : '24px 14px', textAlign: 'center' }}>
-            <div style={{ fontSize: isMobile ? 24 : 30, marginBottom: 8 }}>{f.icon}</div>
-            <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isMobile ? 16 : 19, fontWeight: 600, color: C.text }}>{f.name}</div>
-            <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{f.note}</div>
-          </div>
-        ))}
-      </div>
-
       {/* Family photo */}
       <div style={{
         borderRadius: 20,
         overflow: 'hidden',
         boxShadow: '0 4px 24px rgba(26,61,71,0.15)',
         border: '1px solid #e8ddd0',
+        marginBottom: isMobile ? 24 : 36,
       }}>
         <img
           src="/family.jpeg"
           alt="The Jukes family at the Australian Open"
           style={{ width: '100%', display: 'block', objectFit: 'cover' }}
         />
+      </div>
+
+      {/* Section shortcuts */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
+        {sections.map(s => (
+          <button
+            key={s.label}
+            onClick={() => setPage(s.page)}
+            style={{
+              background: C.nav,
+              borderRadius: 14,
+              padding: isMobile ? '18px 12px' : '22px 12px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+              boxShadow: '0 4px 16px rgba(26,61,71,0.22)',
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(26,61,71,0.32)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,61,71,0.22)' }}
+          >
+            <span style={{ fontSize: isMobile ? 20 : 22 }}>{s.icon}</span>
+            <span style={{ color: 'white', fontSize: 12, letterSpacing: 1.5, fontWeight: 600 }}>{s.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   )
