@@ -72,7 +72,7 @@ function shuffled(arr, seed) {
 function Nav({ page, setPage }) {
   const isMobile = useIsMobile()
   const [menuOpen, setMenuOpen] = useState(false)
-  const pages = ['Home', 'Photos', 'Messages', 'Links', 'Tools']
+  const pages = ['Home', 'Photos', 'Messages', 'Over & Above', 'Tools']
 
   const logoStyle = {
     fontFamily: "'Playfair Display', Georgia, serif",
@@ -166,7 +166,7 @@ function HomePage({ setPage }) {
   const sections = [
     { label: 'PHOTOS',   icon: '📷', page: 'Photos'   },
     { label: 'MESSAGES', icon: '💬', page: 'Messages' },
-    { label: 'LINKS',    icon: '🔗', page: 'Links'    },
+    { label: 'OVER & ABOVE', icon: '🔗', page: 'Over & Above' },
     { label: 'TOOLS',    icon: '📐', page: 'Tools'    },
   ]
 
@@ -239,7 +239,7 @@ function HomePage({ setPage }) {
 // ─── Photos ───────────────────────────────────────────────────────────────────
 // To link an album: replace the `url` value with your Google Photos shared album link.
 const PHOTO_ALBUMS = [
-  { name: 'Trial Photos',      date: '2026',       thumb: '🏖️', count: 47,  url: 'https://www.icloud.com/sharedalbum/#B2IG4TcsmGRQlrr' },
+  { name: 'Summer 2025–26',    date: 'Dec 2025',   thumb: '🏖️', count: 47,  url: 'https://photos.google.com' },
   { name: 'Swimming Carnival', date: 'Nov 2025',   thumb: '🏊', count: 23,  url: 'https://photos.google.com' },
   { name: 'Beach House Reno',  date: 'Ongoing',    thumb: '🏠', count: 89,  url: 'https://photos.google.com' },
   { name: 'Christmas 2024',    date: 'Dec 2024',   thumb: '🎄', count: 34,  url: 'https://photos.google.com' },
@@ -288,47 +288,145 @@ function PhotosPage() {
 }
 
 // ─── Messages ─────────────────────────────────────────────────────────────────
-// Add new messages to this array — most recent first.
-const MESSAGES = [
-  {
-    from: 'Steve', initials: 'SJ', date: '8 Apr 2026',
-    text: 'Welcome to the Jukes family site! We can post updates and notes here for each other. To add a new message, just ask Claude to add it to the App.jsx file.',
-  },
-  {
-    from: 'Melanie', initials: 'MJ', date: '7 Apr 2026',
-    text: "Cobie has swim training Tuesday and Thursday this week. Honor's gymnastics is Saturday morning as usual.",
-  },
-  {
-    from: 'Steve', initials: 'SJ', date: '5 Apr 2026',
-    text: 'Beach house update: builders starting on the kitchen this week. Should be done by end of the month.',
-  },
-]
-
 function MessagesPage() {
   const isMobile = useIsMobile()
+  const [messages, setMessages] = useState([])
+  const [me, setMe]             = useState(null)
+  const [text, setText]         = useState('')
+  const [posting, setPosting]   = useState(false)
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState(null)
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/me').then(r => r.json()),
+      fetch('/api/messages').then(r => r.json()),
+    ]).then(([meData, msgs]) => {
+      setMe(meData)
+      setMessages(Array.isArray(msgs) ? msgs : [])
+      setLoading(false)
+    }).catch(() => {
+      setError('Could not load messages.')
+      setLoading(false)
+    })
+  }, [])
+
+  const post = async () => {
+    if (!text.trim()) return
+    setPosting(true)
+    await fetch('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    })
+    const msgs = await fetch('/api/messages').then(r => r.json())
+    setMessages(Array.isArray(msgs) ? msgs : [])
+    setText('')
+    setPosting(false)
+  }
+
+  const del = async (id) => {
+    if (!confirm('Delete this message?')) return
+    await fetch(`/api/messages?id=${id}`, { method: 'DELETE' })
+    setMessages(m => m.filter(msg => msg.id !== id))
+  }
+
+  const formatDate = (iso) => {
+    const d = new Date(iso)
+    return d.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+
+  const initials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
   return (
     <div style={{ ...styles.section, maxWidth: 680, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Messages</h2>
       <p style={styles.subhead}>Family noticeboard</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {MESSAGES.map((m, i) => (
-          <div key={i} style={{ ...styles.card, padding: '20px 24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: '50%', background: C.nav,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontSize: 12, fontWeight: 600, flexShrink: 0,
-              }}>
-                {m.initials}
-              </div>
-              <div>
-                <div style={{ fontWeight: 600, color: C.text, fontSize: 14 }}>{m.from}</div>
-                <div style={{ fontSize: 12, color: C.muted }}>{m.date}</div>
-              </div>
+
+      {/* Compose box */}
+      {me && !me.error && (
+        <div style={{ ...styles.card, padding: '20px 24px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', background: C.accent,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontSize: 13, fontWeight: 600, flexShrink: 0,
+            }}>
+              {initials(me.name)}
             </div>
-            <p style={{ color: C.text, lineHeight: 1.65, margin: 0 }}>{m.text}</p>
+            <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{me.name}</span>
+          </div>
+          <textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Write a message for the family..."
+            rows={3}
+            style={{
+              width: '100%', padding: '10px 14px', borderRadius: 10,
+              border: '1px solid #d4c9bb', fontSize: 15, fontFamily: 'inherit',
+              color: C.text, resize: 'vertical', outline: 'none',
+              background: '#fdfaf6',
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+            <button
+              onClick={post}
+              disabled={posting || !text.trim()}
+              style={{
+                background: text.trim() ? C.nav : '#ccc',
+                color: 'white', border: 'none', borderRadius: 8,
+                padding: '9px 22px', fontSize: 14, fontWeight: 600,
+                cursor: text.trim() ? 'pointer' : 'default', transition: 'background 0.15s',
+              }}
+            >
+              {posting ? 'Posting…' : 'Post'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Messages list */}
+      {loading && <p style={{ color: C.muted, fontSize: 14 }}>Loading messages…</p>}
+      {error  && <p style={{ color: '#e05050', fontSize: 14 }}>{error}</p>}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {messages.map(m => (
+          <div key={m.id} style={{ ...styles.card, padding: '20px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%', background: C.nav,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontSize: 12, fontWeight: 600, flexShrink: 0,
+                }}>
+                  {initials(m.author)}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, color: C.text, fontSize: 14 }}>{m.author}</div>
+                  <div style={{ fontSize: 12, color: C.muted }}>{formatDate(m.created_at)}</div>
+                </div>
+              </div>
+              {me && (me.isAdmin || me.email === m.email) && (
+                <button
+                  onClick={() => del(m.id)}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#ccc', fontSize: 18, lineHeight: 1, padding: '0 4px',
+                  }}
+                  title="Delete message"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <p style={{ color: C.text, lineHeight: 1.65, margin: 0, whiteSpace: 'pre-wrap' }}>{m.text}</p>
           </div>
         ))}
+        {!loading && messages.length === 0 && (
+          <p style={{ color: C.muted, fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
+            No messages yet — be the first to post!
+          </p>
+        )}
       </div>
     </div>
   )
@@ -367,7 +465,7 @@ function LinksPage() {
   const isMobile = useIsMobile()
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
-      <h2 style={styles.h2}>Links</h2>
+      <h2 style={styles.h2}>Over & Above</h2>
       <p style={styles.subhead}>Useful family bookmarks and resources</p>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 18 }}>
         {LINK_CATEGORIES.map(cat => (
@@ -603,7 +701,7 @@ export default function App() {
       {page === 'Home'     && <HomePage  setPage={setPage} />}
       {page === 'Photos'   && <PhotosPage />}
       {page === 'Messages' && <MessagesPage />}
-      {page === 'Links'    && <LinksPage />}
+      {page === 'Over & Above' && <LinksPage />}
       {page === 'Tools'    && <ToolsPage />}
     </div>
   )
