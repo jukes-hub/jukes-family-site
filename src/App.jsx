@@ -482,6 +482,8 @@ function MathsGrid() {
                       ) : (
                         <input
                           type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={inputs[key] || ''}
                           onChange={e => handleInput(key, e.target.value, answer)}
                           style={{
