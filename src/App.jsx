@@ -333,7 +333,10 @@ function MessagesPage() {
 
   const formatDate = (iso) => {
     const d = new Date(iso)
-    return d.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
+    return d.toLocaleDateString('en-NZ', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    })
   }
 
   const initials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -363,9 +366,9 @@ function MessagesPage() {
             rows={3}
             style={{
               width: '100%', padding: '10px 14px', borderRadius: 10,
-              border: '1px solid #d4c9bb', fontSize: 15, fontFamily: 'inherit',
+              border: '1px solid #d4c9bb', fontSize: 16, fontFamily: 'inherit',
               color: C.text, resize: 'vertical', outline: 'none',
-              background: '#fdfaf6',
+              background: '#fdfaf6', WebkitAppearance: 'none',
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
