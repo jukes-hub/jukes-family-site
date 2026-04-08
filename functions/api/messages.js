@@ -9,14 +9,24 @@ const EMAIL_TO_NAME = {
 }
 
 function getEmail(request) {
+  // Try header first (desktop)
   const jwt = request.headers.get('Cf-Access-Jwt-Assertion')
-  if (!jwt) return null
-  try {
-    const payload = JSON.parse(atob(jwt.split('.')[1]))
-    return payload.email || null
-  } catch {
-    return null
+  if (jwt) {
+    try {
+      const payload = JSON.parse(atob(jwt.split('.')[1]))
+      if (payload.email) return payload.email
+    } catch {}
   }
+  // Fall back to cookie (iOS Safari)
+  const cookies = request.headers.get('Cookie') || ''
+  const match = cookies.match(/CF_Authorization=([^;]+)/)
+  if (match) {
+    try {
+      const payload = JSON.parse(atob(match[1].split('.')[1]))
+      if (payload.email) return payload.email
+    } catch {}
+  }
+  return null
 }
 
 // GET — fetch all messages
