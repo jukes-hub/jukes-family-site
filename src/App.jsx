@@ -404,16 +404,26 @@ function LinksPage() {
 
 // ─── Maths Grid Tool ──────────────────────────────────────────────────────────
 function MathsGrid() {
-  const [mode, setMode]           = useState('addition')
-  const [showAnswers, setShow]    = useState(false)
-  const [inputs, setInputs]       = useState({})
-  const [checked, setChecked]     = useState({})
+  const isMobile = useIsMobile()
+  const [mode, setMode]        = useState('addition')
+  const [showAnswers, setShow] = useState(false)
+  const [inputs, setInputs]    = useState({})
+  const [checked, setChecked]  = useState({})
+  const [gridIndex, setGridIndex] = useState(0)
 
-  const size = 10
-  const nums = Array.from({ length: size }, (_, i) => i + 1)
-  const seed = 'jukes-' + mode
-  const rows = shuffled(nums, seed + 'r')
-  const cols = shuffled(nums, seed + 'c')
+  const allNums = Array.from({ length: 12 }, (_, i) => i + 1) // 1–12
+  const seed = 'jukes-' + mode + '-' + gridIndex
+  const mobileCount = 6
+
+  // Desktop: all 12 numbers. Mobile: 6 randomly selected from 1–12
+  const rows = isMobile
+    ? shuffled(allNums, seed + 'r').slice(0, mobileCount)
+    : shuffled(allNums, seed + 'r')
+  const cols = isMobile
+    ? shuffled(allNums, seed + 'c').slice(0, mobileCount)
+    : shuffled(allNums, seed + 'c')
+
+  const cellSize = isMobile ? 44 : 42
 
   const calc = (r, c) => mode === 'addition' ? r + c : r - c
 
@@ -423,7 +433,11 @@ function MathsGrid() {
     setChecked(p => ({ ...p, [key]: parseInt(val) === answer ? 'correct' : 'wrong' }))
   }
 
-  const reset = () => { setInputs({}); setChecked({}) }
+  const reset = () => {
+    setInputs({})
+    setChecked({})
+    setGridIndex(i => i + 1) // new shuffle each reset
+  }
 
   const Btn = ({ children, active, onClick, outline }) => (
     <button onClick={onClick} style={{
@@ -443,40 +457,44 @@ function MathsGrid() {
         <Btn active={mode === 'addition'}    onClick={() => { setMode('addition');    reset() }}>Addition</Btn>
         <Btn active={mode === 'subtraction'} onClick={() => { setMode('subtraction'); reset() }}>Subtraction</Btn>
         <Btn outline onClick={() => setShow(s => !s)}>{showAnswers ? 'Hide Answers' : 'Show Answers'}</Btn>
-        <Btn onClick={reset}>Reset</Btn>
+        <Btn onClick={reset}>{isMobile ? 'New Grid' : 'Reset'}</Btn>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ borderCollapse: 'collapse' }}>
+      {isMobile && (
+        <p style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>
+          Showing 6 numbers from 1–12. Tap "New Grid" for a different set.
+        </p>
+      )}
+
+      <div style={{ overflowX: 'visible' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ width: 42, height: 42, background: C.nav, color: 'white', textAlign: 'center', fontSize: 16, borderRadius: '4px 0 0 0' }}>
+              <th style={{ width: cellSize, height: cellSize, background: C.nav, color: 'white', textAlign: 'center', fontSize: 16, borderRadius: '4px 0 0 0', flexShrink: 0 }}>
                 {mode === 'addition' ? '+' : '−'}
               </th>
               {cols.map(c => (
-                <th key={c} style={{ width: 42, height: 42, textAlign: 'center', background: C.nav, color: 'white', fontWeight: 600, fontSize: 14 }}>{c}</th>
+                <th key={c} style={{ width: cellSize, height: cellSize, textAlign: 'center', background: C.nav, color: 'white', fontWeight: 600, fontSize: 14 }}>{c}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map(r => (
               <tr key={r}>
-                <td style={{ textAlign: 'center', fontWeight: 600, background: '#d4eaef', width: 42, height: 42, fontSize: 14 }}>{r}</td>
+                <td style={{ textAlign: 'center', fontWeight: 600, background: '#d4eaef', width: cellSize, height: cellSize, fontSize: 14 }}>{r}</td>
                 {cols.map(c => {
                   const answer = calc(r, c)
                   const key = `${r}-${c}`
                   const status = checked[key]
 
                   if (mode === 'subtraction' && answer < 0) {
-                    return (
-                      <td key={c} style={{ width: 42, height: 42, textAlign: 'center', color: '#ccc' }}>—</td>
-                    )
+                    return <td key={c} style={{ width: cellSize, height: cellSize, textAlign: 'center', color: '#ccc' }}>—</td>
                   }
 
                   return (
-                    <td key={c} style={{ width: 42, height: 42, padding: 2 }}>
+                    <td key={c} style={{ width: cellSize, height: cellSize, padding: 2 }}>
                       {showAnswers ? (
-                        <div style={{ width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: C.teal, fontSize: 14 }}>
+                        <div style={{ width: cellSize - 4, height: cellSize - 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: C.teal, fontSize: 14 }}>
                           {answer}
                         </div>
                       ) : (
@@ -487,12 +505,12 @@ function MathsGrid() {
                           value={inputs[key] || ''}
                           onChange={e => handleInput(key, e.target.value, answer)}
                           style={{
-                            width: 38, height: 38, textAlign: 'center',
+                            width: cellSize - 4, height: cellSize - 4, textAlign: 'center',
                             border: `1px solid ${status === 'correct' ? '#4a9e6b' : status === 'wrong' ? '#e05050' : '#d4c9bb'}`,
                             borderRadius: 6, fontSize: 14, fontWeight: 600,
                             background: status === 'correct' ? '#e8f7ee' : status === 'wrong' ? '#fde8e8' : 'white',
                             color: status === 'correct' ? '#2d6e4a' : status === 'wrong' ? '#b03030' : C.text,
-                            outline: 'none', cursor: 'text',
+                            outline: 'none', cursor: 'text', display: 'block', margin: 'auto',
                           }}
                         />
                       )}
