@@ -67,8 +67,21 @@ function shuffled(arr, seed) {
   return a
 }
 
-// ─── Components ──────────────────────────────────────────────────────────────
+// ─── Daily photo rotation ─────────────────────────────────────────────────────
+// To add more photos: upload them to the public/ folder and add the filename here
+const FAMILY_PHOTOS = [
+  'family.jpeg',
+  // 'family2.jpeg',
+  // 'family3.jpeg',
+]
 
+function getDailyPhoto() {
+  const now = new Date()
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
+  return FAMILY_PHOTOS[dayOfYear % FAMILY_PHOTOS.length]
+}
+
+// ─── Nav ─────────────────────────────────────────────────────────────────────
 function Nav({ page, setPage }) {
   const isMobile = useIsMobile()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -173,7 +186,6 @@ function HomePage({ setPage }) {
 
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
-      {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 44 }}>
         <h1 style={{
           fontFamily: "'Playfair Display', Georgia, serif",
@@ -191,7 +203,6 @@ function HomePage({ setPage }) {
         <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
       </div>
 
-      {/* Family photo — rotates daily */}
       <div style={{
         borderRadius: 20,
         overflow: 'hidden',
@@ -208,7 +219,6 @@ function HomePage({ setPage }) {
         />
       </div>
 
-      {/* Section shortcuts */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
         {sections.map(s => (
           <button
@@ -240,14 +250,14 @@ function HomePage({ setPage }) {
 }
 
 // ─── Photos ───────────────────────────────────────────────────────────────────
-// To link an album: replace the `url` value with your Google Photos shared album link.
+// To link an album: replace the `url` value with your shared album link.
 const PHOTO_ALBUMS = [
-  { name: 'Summer 2025–26',    date: 'Dec 2025',   thumb: '🏖️', count: 47,  url: 'https://photos.google.com' },
-  { name: 'Swimming Carnival', date: 'Nov 2025',   thumb: '🏊', count: 23,  url: 'https://photos.google.com' },
-  { name: 'Beach House Reno',  date: 'Ongoing',    thumb: '🏠', count: 89,  url: 'https://photos.google.com' },
-  { name: 'Christmas 2024',    date: 'Dec 2024',   thumb: '🎄', count: 34,  url: 'https://photos.google.com' },
-  { name: 'School Events',     date: '2025',       thumb: '🎒', count: 61,  url: 'https://photos.google.com' },
-  { name: 'Family Trips',      date: '2024–25',    thumb: '✈️', count: 112, url: 'https://photos.google.com' },
+  { name: 'Summer 2025–26',    date: 'Dec 2025',  thumb: '🏖️', count: 47,  url: 'https://photos.google.com' },
+  { name: 'Swimming Carnival', date: 'Nov 2025',  thumb: '🏊', count: 23,  url: 'https://photos.google.com' },
+  { name: 'Beach House Reno',  date: 'Ongoing',   thumb: '🏠', count: 89,  url: 'https://photos.google.com' },
+  { name: 'Christmas 2024',    date: 'Dec 2024',  thumb: '🎄', count: 34,  url: 'https://photos.google.com' },
+  { name: 'School Events',     date: '2025',      thumb: '🎒', count: 61,  url: 'https://photos.google.com' },
+  { name: 'Family Trips',      date: '2024–25',   thumb: '✈️', count: 112, url: 'https://photos.google.com' },
 ]
 
 function PhotosPage() {
@@ -355,7 +365,6 @@ function MessagesPage() {
       <h2 style={styles.h2}>Messages</h2>
       <p style={styles.subhead}>Family noticeboard</p>
 
-      {/* Compose box */}
       {me && !me.error && (
         <div style={{ ...styles.card, padding: '20px 24px', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -397,9 +406,8 @@ function MessagesPage() {
         </div>
       )}
 
-      {/* Messages list */}
       {loading && <p style={{ color: C.muted, fontSize: 14 }}>Loading messages…</p>}
-      {error  && <p style={{ color: '#e05050', fontSize: 14 }}>{error}</p>}
+      {error   && <p style={{ color: '#e05050', fontSize: 14 }}>{error}</p>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {messages.map(m => (
@@ -444,32 +452,34 @@ function MessagesPage() {
   )
 }
 
-// ─── Links ────────────────────────────────────────────────────────────────────
-// Add or edit links here — group them into categories.
+// ─── Useful Links ─────────────────────────────────────────────────────────────
+// To edit a link: change the label or url value.
+// To add a link: copy an existing entry and paste it inside the relevant category.
+// To add a new category: copy an entire category block and change the name and links.
 const LINK_CATEGORIES = [
   {
     name: 'School & Sports',
     links: [
-      { label: 'AquaGym',                        url: 'https://aquagym.co.nz/' },
-      { label: 'Netball',                        url: 'https://www.sporty.co.nz/srnc/Home' },
-      { label: 'Basketball',                     url: 'https://hillviewsport.wordpress.com/basketball/' }
-      { label: 'Hillview Christian School',      url: 'https://www.hillview.school.nz/' },
+      { label: 'AquaGym',                   url: 'https://aquagym.co.nz/' },
+      { label: 'Netball',                   url: 'https://www.sporty.co.nz/srnc/Home' },
+      { label: 'Basketball',                url: 'https://hillviewsport.wordpress.com/basketball/' },
+      { label: 'Hillview Christian School', url: 'https://www.hillview.school.nz/' },
     ],
   },
   {
     name: 'Family Admin',
     links: [
-      { label: 'Google Calendar',  url: 'https://calendar.google.com' },
-      { label: 'Google Drive',     url: 'https://drive.google.com' },
-      { label: 'MetService', url: 'https://www.metservice.com/towns-cities/regions/christchurch/locations/christchurch' },
+      { label: 'Google Calendar', url: 'https://calendar.google.com' },
+      { label: 'Google Drive',    url: 'https://drive.google.com' },
+      { label: 'MetService',      url: 'https://www.metservice.com/towns-cities/regions/christchurch/locations/christchurch' },
     ],
   },
   {
     name: 'Sumner Project',
     links: [
-      { label: 'IRD',                  url: 'https://www.ird.govt.nz' },
-      { label: 'CCC Building',         url: 'https://www.ccc.govt.nz' },
-      { label: 'Christchurch Maps',    url: 'https://maps.ccc.govt.nz' },
+      { label: 'IRD',               url: 'https://www.ird.govt.nz' },
+      { label: 'CCC Building',      url: 'https://www.ccc.govt.nz' },
+      { label: 'Christchurch Maps', url: 'https://maps.ccc.govt.nz' },
     ],
   },
 ]
@@ -514,17 +524,16 @@ function LinksPage() {
 // ─── Maths Grid Tool ──────────────────────────────────────────────────────────
 function MathsGrid() {
   const isMobile = useIsMobile()
-  const [mode, setMode]        = useState('addition')
-  const [showAnswers, setShow] = useState(false)
-  const [inputs, setInputs]    = useState({})
-  const [checked, setChecked]  = useState({})
+  const [mode, setMode]           = useState('addition')
+  const [showAnswers, setShow]    = useState(false)
+  const [inputs, setInputs]       = useState({})
+  const [checked, setChecked]     = useState({})
   const [gridIndex, setGridIndex] = useState(0)
 
-  const allNums = Array.from({ length: 12 }, (_, i) => i + 1) // 1–12
+  const allNums = Array.from({ length: 12 }, (_, i) => i + 1)
   const seed = 'jukes-' + mode + '-' + gridIndex
   const mobileCount = 6
 
-  // Desktop: all 12 numbers. Mobile: 6 randomly selected from 1–12
   const rows = isMobile
     ? shuffled(allNums, seed + 'r').slice(0, mobileCount)
     : shuffled(allNums, seed + 'r')
@@ -533,7 +542,6 @@ function MathsGrid() {
     : shuffled(allNums, seed + 'c')
 
   const cellSize = isMobile ? 44 : 42
-
   const calc = (r, c) => mode === 'addition' ? r + c : r - c
 
   const handleInput = (key, val, answer) => {
@@ -545,7 +553,7 @@ function MathsGrid() {
   const reset = () => {
     setInputs({})
     setChecked({})
-    setGridIndex(i => i + 1) // new shuffle each reset
+    setGridIndex(i => i + 1)
   }
 
   const Btn = ({ children, active, onClick, outline }) => (
@@ -579,7 +587,7 @@ function MathsGrid() {
         <table style={{ borderCollapse: 'collapse', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ width: cellSize, height: cellSize, background: C.nav, color: 'white', textAlign: 'center', fontSize: 16, borderRadius: '4px 0 0 0', flexShrink: 0 }}>
+              <th style={{ width: cellSize, height: cellSize, background: C.nav, color: 'white', textAlign: 'center', fontSize: 16, borderRadius: '4px 0 0 0' }}>
                 {mode === 'addition' ? '+' : '−'}
               </th>
               {cols.map(c => (
@@ -635,23 +643,9 @@ function MathsGrid() {
   )
 }
 
-// ─── Daily photo rotation ─────────────────────────────────────────────────────
-// To add more photos: upload them to the public/ folder and add the filename here
-const FAMILY_PHOTOS = [
-  'family.jpeg',
-  // 'family2.jpeg',
-  // 'family3.jpeg',
-]
-
-function getDailyPhoto() {
-  const now = new Date()
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
-  return FAMILY_PHOTOS[dayOfYear % FAMILY_PHOTOS.length]
-}
-
-// ─── Tools ────────────────────────────────────────────────────────────────────
+// ─── Over & Above ─────────────────────────────────────────────────────────────
 // To add a new tool: copy one of the entries below and fill in the details.
-// Upload the HTML file to the public/ folder in GitHub first.
+// Upload the HTML file to the public/ folder in GitHub first (if it's a local tool).
 const TOOLS = [
   {
     name: "Cobie's Maths App",
@@ -678,7 +672,7 @@ function OverAndAbovePage() {
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
       <h2 style={styles.h2}>Over & Above</h2>
-      <p style={styles.subhead}>Homework and learning tools</p>
+      <p style={styles.subhead}>Tools and apps for the family</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {TOOLS.map(t => (
           <div key={t.name} style={{ ...styles.card, padding: isMobile ? '20px' : '28px 32px' }}>
@@ -737,13 +731,11 @@ function getPageFromHash() {
 export default function App() {
   const [page, setPage] = useState(getPageFromHash)
 
-  // Sync URL hash when page changes
   const navigate = (p) => {
     setPage(p)
     window.location.hash = p.replace(/ /g, '-')
   }
 
-  // Handle browser back/forward and refresh
   useEffect(() => {
     const handler = () => setPage(getPageFromHash())
     window.addEventListener('hashchange', handler)
