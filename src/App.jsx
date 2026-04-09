@@ -193,12 +193,11 @@ function HomePage({ setPage }) {
         overflow: 'hidden',
         boxShadow: '0 4px 24px rgba(26,61,71,0.15)',
         border: '1px solid #e8ddd0',
-        marginBottom: isMobile ? 24 : 36,
         aspectRatio: '4/3',
         background: '#d4eaef',
         width: '75%',
         margin: '0 auto',
-        marginBottom: isMobile ? 24 : 36,
+        marginBottom: isMobile ? 32 : 44,
       }}>
         <img
           src={`/${dailyPhoto}`}
