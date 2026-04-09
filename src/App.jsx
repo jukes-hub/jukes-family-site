@@ -670,9 +670,9 @@ const TOOLS = [
   },
   {
     name: 'Epilog',
-    description: 'Family journal and memory keeping',
+    description: 'Read, Rate, Remember',
     icon: '📖',
-    url: 'https://epilog.com', // ← replace with your actual Epilog URL
+    url: 'https://epilog.org.nz',
   },
 ]
 
