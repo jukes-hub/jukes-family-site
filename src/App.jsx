@@ -71,10 +71,10 @@ function shuffled(arr, seed) {
 // To add more photos: upload them to the public/ folder and add the filename here
 const FAMILY_PHOTOS = [
   'family.jpeg',
-  // 'family2.jpeg',
-  // 'family3.jpeg',
-  // 'family4.jpeg',
-  // 'family5.jpeg',
+  'family2.jpeg',
+  'family3.jpeg',
+  'family4.jpeg',
+  'family5.jpeg',
 ]
 
 function getDailyPhoto() {
