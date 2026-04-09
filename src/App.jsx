@@ -437,6 +437,14 @@ const LINK_CATEGORIES = [
       { label: 'Christchurch Maps', url: 'https://maps.ccc.govt.nz' },
     ],
   },
+  {
+    name: 'Kids & Teams',
+    links: [
+      { label: 'Heja',      url: 'https://app.heja.io' },
+      { label: 'WhatsApp',  url: 'https://web.whatsapp.com' },
+      { label: 'Messenger', url: 'https://www.messenger.com' },
+    ],
+  },
 ]
 
 function LinksPage() {
