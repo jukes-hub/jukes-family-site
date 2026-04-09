@@ -450,9 +450,10 @@ const LINK_CATEGORIES = [
   {
     name: 'School & Sports',
     links: [
-      { label: 'Swimming NZ',      url: 'https://swimmingnz.org' },
-      { label: 'Gymnastics NZ',    url: 'https://gymnasticsnz.com' },
-      { label: 'School Portal',    url: 'https://example.com' },
+      { label: 'AquaGym',                        url: 'https://aquagym.co.nz/' },
+      { label: 'Netball',                        url: 'https://www.sporty.co.nz/srnc/Home' },
+      { label: 'Basketball',                     url: 'https://hillviewsport.wordpress.com/basketball/' }
+      { label: 'Hillview Christian School',      url: 'https://www.hillview.school.nz/' },
     ],
   },
   {
@@ -460,15 +461,15 @@ const LINK_CATEGORIES = [
     links: [
       { label: 'Google Calendar',  url: 'https://calendar.google.com' },
       { label: 'Google Drive',     url: 'https://drive.google.com' },
-      { label: 'IRD',              url: 'https://www.ird.govt.nz' },
+      { label: 'MetService', url: 'https://www.metservice.com/towns-cities/regions/christchurch/locations/christchurch' },
     ],
   },
   {
     name: 'Sumner Project',
     links: [
-      { label: 'MetService Sumner', url: 'https://www.metservice.com' },
-      { label: 'CCC Building',      url: 'https://www.ccc.govt.nz' },
-      { label: 'Christchurch Maps', url: 'https://maps.ccc.govt.nz' },
+      { label: 'IRD',                  url: 'https://www.ird.govt.nz' },
+      { label: 'CCC Building',         url: 'https://www.ccc.govt.nz' },
+      { label: 'Christchurch Maps',    url: 'https://maps.ccc.govt.nz' },
     ],
   },
 ]
@@ -666,9 +667,9 @@ const TOOLS = [
   },
   {
     name: 'Epilog',
-    description: 'Family journal and memory keeping',
+    description: 'Read, Rate, Remember',
     icon: '📖',
-    url: 'https://epilog.com', // ← replace with your actual Epilog URL
+    url: 'https://epilog.org.nz',
   },
 ]
 
