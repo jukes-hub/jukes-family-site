@@ -100,7 +100,7 @@ function Nav({ page, setPage }) {
     return (
       <nav style={{ background: C.nav, position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
-          <div style={logoStyle}>JUKES HUB</div>
+          <button onClick={() => setPage('Home')} style={{ ...logoStyle, background: 'none', border: 'none', cursor: 'pointer' }}>JUKES HUB</button>
           <button
             onClick={() => setMenuOpen(m => !m)}
             style={{ background: 'none', border: 'none', color: 'white', fontSize: 22, cursor: 'pointer', padding: '14px 0' }}
@@ -145,7 +145,7 @@ function Nav({ page, setPage }) {
       zIndex: 100,
       boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
     }}>
-      <div style={logoStyle}>JUKES HUB</div>
+      <button onClick={() => setPage('Home')} style={{ ...logoStyle, background: 'none', border: 'none', cursor: 'pointer' }}>JUKES HUB</button>
       <div style={{ display: 'flex', gap: 2 }}>
         {pages.map(p => (
           <button
