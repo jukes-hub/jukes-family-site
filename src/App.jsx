@@ -198,9 +198,7 @@ function HomePage({ setPage }) {
         }}>
           Jukes Hub
         </h1>
-        <p style={{ color: C.muted, fontSize: isMobile ? 15 : 18 }}>
-          Sumner, Christchurch &nbsp;·&nbsp; Aotearoa New Zealand
-        </p>
+
         <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
       </div>
 
