@@ -187,20 +187,6 @@ function HomePage({ setPage }) {
 
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
-      <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 44 }}>
-        <h1 style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: isMobile ? 34 : 46,
-          color: C.text,
-          letterSpacing: 2,
-          marginBottom: 8,
-          fontWeight: 600,
-        }}>
-          Jukes Hub
-        </h1>
-
-        <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
-      </div>
 
       <div style={{
         borderRadius: 20,
