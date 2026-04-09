@@ -196,6 +196,9 @@ function HomePage({ setPage }) {
         marginBottom: isMobile ? 24 : 36,
         aspectRatio: '4/3',
         background: '#d4eaef',
+        width: '75%',
+        margin: '0 auto',
+        marginBottom: isMobile ? 24 : 36,
       }}>
         <img
           src={`/${dailyPhoto}`}
