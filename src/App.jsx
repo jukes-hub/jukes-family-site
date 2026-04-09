@@ -175,14 +175,8 @@ function Nav({ page, setPage }) {
 }
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
-function HomePage({ setPage }) {
+function HomePage() {
   const isMobile = useIsMobile()
-  const sections = [
-    { label: 'PHOTOS',       icon: '🖼️', page: 'Photos'       },
-    { label: 'MESSAGES',     icon: '💬', page: 'Messages'     },
-    { label: 'USEFUL LINKS', icon: '🔗', page: 'Useful Links' },
-    { label: 'OVER & ABOVE', icon: '⭐', page: 'Over & Above' },
-  ]
   const dailyPhoto = getDailyPhoto()
 
   return (
@@ -197,7 +191,7 @@ function HomePage({ setPage }) {
         background: '#d4eaef',
         width: '75%',
         margin: '0 auto',
-        marginBottom: isMobile ? 32 : 44,
+        marginBottom: 0,
       }}>
         <img
           src={`/${dailyPhoto}`}
@@ -206,31 +200,6 @@ function HomePage({ setPage }) {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14, width: '75%', margin: '0 auto' }}>
-        {sections.map(s => (
-          <button
-            key={s.label}
-            onClick={() => setPage(s.page)}
-            style={{
-              background: C.nav,
-              borderRadius: 14,
-              padding: isMobile ? '18px 12px' : '22px 12px',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-              boxShadow: '0 4px 16px rgba(26,61,71,0.22)',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(26,61,71,0.32)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,61,71,0.22)' }}
-          >
-            <span style={{ color: 'white', fontSize: 12, letterSpacing: 1.5, fontWeight: 600 }}>{s.label}</span>
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
@@ -731,7 +700,7 @@ export default function App() {
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
       <Nav page={page} setPage={navigate} />
-      {page === 'Home'         && <HomePage     setPage={navigate} />}
+      {page === 'Home'         && <HomePage />}
       {page === 'Photos'       && <PhotosPage />}
       {page === 'Messages'     && <MessagesPage />}
       {page === 'Useful Links' && <LinksPage />}
