@@ -178,7 +178,7 @@ function Nav({ page, setPage }) {
 function HomePage({ setPage }) {
   const isMobile = useIsMobile()
   const sections = [
-    { label: 'PHOTOS',       icon: '📷', page: 'Photos'       },
+    { label: 'PHOTOS',       icon: '🖼️', page: 'Photos'       },
     { label: 'MESSAGES',     icon: '💬', page: 'Messages'     },
     { label: 'USEFUL LINKS', icon: '🔗', page: 'Useful Links' },
     { label: 'OVER & ABOVE', icon: '⭐', page: 'Over & Above' },
