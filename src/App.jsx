@@ -73,6 +73,8 @@ const FAMILY_PHOTOS = [
   'family.jpeg',
   // 'family2.jpeg',
   // 'family3.jpeg',
+  // 'family4.jpeg',
+  // 'family5.jpeg',
 ]
 
 function getDailyPhoto() {
