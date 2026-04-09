@@ -72,7 +72,7 @@ function shuffled(arr, seed) {
 function Nav({ page, setPage }) {
   const isMobile = useIsMobile()
   const [menuOpen, setMenuOpen] = useState(false)
-  const pages = ['Home', 'Photos', 'Messages', 'Over & Above', 'Tools']
+  const pages = ['Home', 'Photos', 'Messages', 'Useful Links', 'Over & Above']
 
   const logoStyle = {
     fontFamily: "'Playfair Display', Georgia, serif",
@@ -164,11 +164,12 @@ function Nav({ page, setPage }) {
 function HomePage({ setPage }) {
   const isMobile = useIsMobile()
   const sections = [
-    { label: 'PHOTOS',   icon: '📷', page: 'Photos'   },
-    { label: 'MESSAGES', icon: '💬', page: 'Messages' },
-    { label: 'OVER & ABOVE', icon: '🔗', page: 'Over & Above' },
-    { label: 'TOOLS',    icon: '📐', page: 'Tools'    },
+    { label: 'PHOTOS',       icon: '📷', page: 'Photos'       },
+    { label: 'MESSAGES',     icon: '💬', page: 'Messages'     },
+    { label: 'USEFUL LINKS', icon: '🔗', page: 'Useful Links' },
+    { label: 'OVER & ABOVE', icon: '⭐', page: 'Over & Above' },
   ]
+  const dailyPhoto = getDailyPhoto()
 
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
@@ -182,7 +183,7 @@ function HomePage({ setPage }) {
           marginBottom: 8,
           fontWeight: 600,
         }}>
-          The Jukes Family
+          Jukes Hub
         </h1>
         <p style={{ color: C.muted, fontSize: isMobile ? 15 : 18 }}>
           Sumner, Christchurch &nbsp;·&nbsp; New Zealand
@@ -190,18 +191,20 @@ function HomePage({ setPage }) {
         <div style={{ width: 52, height: 3, background: C.accent, margin: '14px auto 0', borderRadius: 2 }} />
       </div>
 
-      {/* Family photo */}
+      {/* Family photo — rotates daily */}
       <div style={{
         borderRadius: 20,
         overflow: 'hidden',
         boxShadow: '0 4px 24px rgba(26,61,71,0.15)',
         border: '1px solid #e8ddd0',
         marginBottom: isMobile ? 24 : 36,
+        aspectRatio: '4/3',
+        background: '#d4eaef',
       }}>
         <img
-          src="/family.jpeg"
-          alt="The Jukes family at the Australian Open"
-          style={{ width: '100%', display: 'block', objectFit: 'cover' }}
+          src={`/${dailyPhoto}`}
+          alt="The Jukes family"
+          style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
         />
       </div>
 
@@ -298,11 +301,20 @@ function MessagesPage() {
   const [error, setError]       = useState(null)
 
   useEffect(() => {
+    const fetchMe = async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await fetch('/api/me', { credentials: 'include' })
+          const data = await res.json()
+          if (data.email) { setMe(data); return }
+        } catch {}
+        await new Promise(r => setTimeout(r, 500))
+      }
+    }
     Promise.all([
-      fetch('/api/me').then(r => r.json()),
-      fetch('/api/messages').then(r => r.json()),
-    ]).then(([meData, msgs]) => {
-      setMe(meData)
+      fetchMe(),
+      fetch('/api/messages', { credentials: 'include' }).then(r => r.json()),
+    ]).then(([, msgs]) => {
       setMessages(Array.isArray(msgs) ? msgs : [])
       setLoading(false)
     }).catch(() => {
@@ -316,10 +328,11 @@ function MessagesPage() {
     setPosting(true)
     await fetch('/api/messages', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
     })
-    const msgs = await fetch('/api/messages').then(r => r.json())
+    const msgs = await fetch('/api/messages', { credentials: 'include' }).then(r => r.json())
     setMessages(Array.isArray(msgs) ? msgs : [])
     setText('')
     setPosting(false)
@@ -327,7 +340,7 @@ function MessagesPage() {
 
   const del = async (id) => {
     if (!confirm('Delete this message?')) return
-    await fetch(`/api/messages?id=${id}`, { method: 'DELETE' })
+    await fetch(`/api/messages?id=${id}`, { method: 'DELETE', credentials: 'include' })
     setMessages(m => m.filter(msg => msg.id !== id))
   }
 
@@ -441,9 +454,9 @@ const LINK_CATEGORIES = [
   {
     name: 'School & Sports',
     links: [
-      { label: 'AquaGym',                      url: 'https://aquagym.co.nz' },
-      { label: 'Gymnastics NZ',                url: 'https://gymnasticsnz.com' },
-      { label: 'Hillview Christian School',    url: 'https://www.hillview.school.nz/' },
+      { label: 'Swimming NZ',      url: 'https://swimmingnz.org' },
+      { label: 'Gymnastics NZ',    url: 'https://gymnasticsnz.com' },
+      { label: 'School Portal',    url: 'https://example.com' },
     ],
   },
   {
@@ -468,7 +481,7 @@ function LinksPage() {
   const isMobile = useIsMobile()
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
-      <h2 style={styles.h2}>Over & Above</h2>
+      <h2 style={styles.h2}>Useful Links</h2>
       <p style={styles.subhead}>Useful family bookmarks and resources</p>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 18 }}>
         {LINK_CATEGORIES.map(cat => (
@@ -625,7 +638,23 @@ function MathsGrid() {
   )
 }
 
+// ─── Daily photo rotation ─────────────────────────────────────────────────────
+// To add more photos: upload them to the public/ folder and add the filename here
+const FAMILY_PHOTOS = [
+  'family.jpeg',
+  // 'family2.jpeg',
+  // 'family3.jpeg',
+]
+
+function getDailyPhoto() {
+  const now = new Date()
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000)
+  return FAMILY_PHOTOS[dayOfYear % FAMILY_PHOTOS.length]
+}
+
 // ─── Tools ────────────────────────────────────────────────────────────────────
+// To add a new tool: copy one of the entries below and fill in the details.
+// Upload the HTML file to the public/ folder in GitHub first.
 const TOOLS = [
   {
     name: "Cobie's Maths App",
@@ -635,17 +664,23 @@ const TOOLS = [
   },
   {
     name: 'Maths Grid',
-    description: 'Practise addition and subtraction facts 1–10 in a shuffled grid',
+    description: 'Practise addition and subtraction facts 1–12 in a shuffled grid',
     icon: '📐',
     url: '/maths-grid.html',
   },
+  {
+    name: 'Epilog',
+    description: 'Family journal and memory keeping',
+    icon: '📖',
+    url: 'https://epilog.com', // ← replace with your actual Epilog URL
+  },
 ]
 
-function ToolsPage() {
+function OverAndAbovePage() {
   const isMobile = useIsMobile()
   return (
     <div style={{ ...styles.section, padding: isMobile ? '32px 16px' : '44px 24px' }}>
-      <h2 style={styles.h2}>Tools</h2>
+      <h2 style={styles.h2}>Over & Above</h2>
       <p style={styles.subhead}>Homework and learning tools</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {TOOLS.map(t => (
@@ -695,17 +730,37 @@ function ToolsPage() {
 }
 
 // ─── App ──────────────────────────────────────────────────────────────────────
+const VALID_PAGES = ['Home', 'Photos', 'Messages', 'Useful Links', 'Over & Above']
+
+function getPageFromHash() {
+  const hash = window.location.hash.replace('#', '').replace(/-/g, ' ')
+  return VALID_PAGES.includes(hash) ? hash : 'Home'
+}
+
 export default function App() {
-  const [page, setPage] = useState('Home')
+  const [page, setPage] = useState(getPageFromHash)
+
+  // Sync URL hash when page changes
+  const navigate = (p) => {
+    setPage(p)
+    window.location.hash = p.replace(/ /g, '-')
+  }
+
+  // Handle browser back/forward and refresh
+  useEffect(() => {
+    const handler = () => setPage(getPageFromHash())
+    window.addEventListener('hashchange', handler)
+    return () => window.removeEventListener('hashchange', handler)
+  }, [])
 
   return (
     <div style={{ background: C.bg, minHeight: '100vh' }}>
-      <Nav page={page} setPage={setPage} />
-      {page === 'Home'     && <HomePage  setPage={setPage} />}
-      {page === 'Photos'   && <PhotosPage />}
-      {page === 'Messages' && <MessagesPage />}
-      {page === 'Over & Above' && <LinksPage />}
-      {page === 'Tools'    && <ToolsPage />}
+      <Nav page={page} setPage={navigate} />
+      {page === 'Home'         && <HomePage     setPage={navigate} />}
+      {page === 'Photos'       && <PhotosPage />}
+      {page === 'Messages'     && <MessagesPage />}
+      {page === 'Useful Links' && <LinksPage />}
+      {page === 'Over & Above' && <OverAndAbovePage />}
     </div>
   )
 }
