@@ -301,26 +301,22 @@ function MessagesPage() {
   const [error, setError]       = useState(null)
 
   useEffect(() => {
-    const fetchMe = async (retries = 3) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const res = await fetch('/api/me', { credentials: 'include' })
-          const data = await res.json()
-          if (data.email) { setMe(data); return }
-        } catch {}
-        await new Promise(r => setTimeout(r, 500))
+    const load = async () => {
+      try {
+        const [meRes, msgsRes] = await Promise.all([
+          fetch('/api/me', { credentials: 'include' }),
+          fetch('/api/messages', { credentials: 'include' }),
+        ])
+        const [meData, msgs] = await Promise.all([meRes.json(), msgsRes.json()])
+        setMe(meData)
+        setMessages(Array.isArray(msgs) ? msgs : [])
+      } catch {
+        setError('Could not load messages.')
+      } finally {
+        setLoading(false)
       }
     }
-    Promise.all([
-      fetchMe(),
-      fetch('/api/messages', { credentials: 'include' }).then(r => r.json()),
-    ]).then(([, msgs]) => {
-      setMessages(Array.isArray(msgs) ? msgs : [])
-      setLoading(false)
-    }).catch(() => {
-      setError('Could not load messages.')
-      setLoading(false)
-    })
+    load()
   }, [])
 
   const post = async () => {
@@ -670,9 +666,9 @@ const TOOLS = [
   },
   {
     name: 'Epilog',
-    description: 'Read, Rate, Remember',
+    description: 'Family journal and memory keeping',
     icon: '📖',
-    url: 'https://epilog.org.nz',
+    url: 'https://epilog.com', // ← replace with your actual Epilog URL
   },
 ]
 
