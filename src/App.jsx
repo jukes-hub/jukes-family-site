@@ -207,7 +207,7 @@ function HomePage({ setPage }) {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? 10 : 14, width: '75%', margin: '0 auto' }}>
         {sections.map(s => (
           <button
             key={s.label}
