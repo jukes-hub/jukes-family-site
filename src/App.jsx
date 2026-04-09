@@ -441,9 +441,9 @@ const LINK_CATEGORIES = [
   {
     name: 'School & Sports',
     links: [
-      { label: 'Swimming NZ',      url: 'https://swimmingnz.org' },
-      { label: 'Gymnastics NZ',    url: 'https://gymnasticsnz.com' },
-      { label: 'School Portal',    url: 'https://example.com' },
+      { label: 'AquaGym',                      url: 'https://aquagym.co.nz' },
+      { label: 'Gymnastics NZ',                url: 'https://gymnasticsnz.com' },
+      { label: 'Hillview Christian School',    url: 'https://www.hillview.school.nz/' },
     ],
   },
   {
