@@ -430,14 +430,6 @@ const LINK_CATEGORIES = [
     ],
   },
   {
-    name: 'Sumner Project',
-    links: [
-      { label: 'IRD',               url: 'https://www.ird.govt.nz' },
-      { label: 'CCC Building',      url: 'https://www.ccc.govt.nz' },
-      { label: 'Christchurch Maps', url: 'https://maps.ccc.govt.nz' },
-    ],
-  },
-  {
     name: 'Kids & Teams',
     links: [
       { label: 'Heja',      url: 'https://app.heja.io' },
