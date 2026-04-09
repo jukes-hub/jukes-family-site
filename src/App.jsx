@@ -78,9 +78,8 @@ const FAMILY_PHOTOS = [
 ]
 
 function getDailyPhoto() {
-  const now = new Date()
-  const hourOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 3600000)
-  return FAMILY_PHOTOS[hourOfYear % FAMILY_PHOTOS.length]
+  const index = Math.floor(Math.random() * FAMILY_PHOTOS.length)
+  return FAMILY_PHOTOS[index]
 }
 
 // ─── Nav ─────────────────────────────────────────────────────────────────────
