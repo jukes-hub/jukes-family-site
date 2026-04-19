@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cobie's Beach Racer - Stage 7</title>
+  <style>
+    body {
+      margin: 0;
+      background: #e8f4f8;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #2a4a5a;
+    }
+    h1 { color: #2a6a7a; margin: 10px; }
+
+    .mode-selector { display: flex; gap: 10px; margin-bottom: 10px; }
+    .mode-selector button {
+      padding: 10px 20px; font-size: 16px; font-weight: bold;
+      border: 2px solid #2a6a7a; background: white; color: #2a6a7a;
+      border-radius: 8px; cursor: pointer;
+    }
+    .mode-selector button.active { background: #2a6a7a; color: white; }
+
+    /* Series score bar */
+    .series-bar {
+      background: white;
+      border: 2px solid #2a6a7a;
+      border-radius: 10px;
+      padding: 8px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .series-bar .race-label { color: #2a6a7a; }
+    .series-bar .score {
+      font-size: 22px;
+      font-family: "Courier New", monospace;
+    }
+
+    .top-info {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 800px; margin-bottom: 8px;
+    }
+    .lives-display { font-size: 18px; font-weight: bold; }
+    .lives-display .hearts { font-size: 20px; letter-spacing: 2px; margin-left: 6px; }
+
+    .race-timer {
+      font-size: 22px; font-weight: bold; font-family: "Courier New", monospace;
+      color: #2a6a7a; background: white; padding: 4px 14px;
+      border: 2px solid #2a6a7a; border-radius: 8px;
+    }
+
+    .game-wrapper { position: relative; }
+    canvas { border: 3px solid #2a6a7a; border-radius: 8px; display: block; }
+
+    .game-over {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none; align-items: center; justify-content: center;
+      border-radius: 8px;
+    }
+    .game-over.visible { display: flex; }
+    .game-over-box {
+      background: white; padding: 30px 50px;
+      border-radius: 12px; text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      max-width: 500px;
+    }
+    .game-over-box h2 { margin: 0 0 10px 0; font-size: 32px; color: #2a6a7a; }
+    .game-over-box p  { margin: 0 0 10px 0; color: #555; font-size: 16px; }
+    .game-over-box .final-time {
+      font-size: 22px; color: #2a6a7a; font-weight: bold;
+      margin: 10px 0; font-family: "Courier New", monospace;
+    }
+    .game-over-box .new-best {
+      display: inline-block;
+      margin: 8px 0 12px 0; padding: 6px 16px;
+      background: linear-gradient(90deg, #ffd700, #ff9500);
+      color: white; font-weight: bold; font-size: 18px;
+      border-radius: 20px;
+      box-shadow: 0 0 16px rgba(255, 180, 0, 0.6);
+    }
+    .game-over-box .series-update {
+      font-size: 18px; color: #d81b60; margin: 10px 0;
+    }
+    .game-over-box button {
+      padding: 12px 28px; font-size: 17px; font-weight: bold;
+      border: 2px solid #2a6a7a; background: #2a6a7a; color: white;
+      border-radius: 8px; cursor: pointer;
+      margin: 4px;
+    }
+    .game-over-box button:hover { background: #1a4a5a; }
+    .game-over-box button.secondary {
+      background: white; color: #2a6a7a;
+    }
+    .game-over-box button.secondary:hover { background: #e8f4f8; }
+
+    .instructions {
+      margin-top: 12px; text-align: center; font-size: 15px; line-height: 1.6;
+    }
+    .p1 { color: #0099a0; font-weight: bold; }
+    .p2 { color: #d81b60; font-weight: bold; }
+
+    .speed-display {
+      margin-top: 10px; font-size: 17px; font-weight: bold;
+      display: flex; gap: 30px; align-items: center;
+    }
+    .boost-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #ffd700, #ff9500);
+      color: white; padding: 2px 10px;
+      border-radius: 12px; font-size: 14px; margin-left: 6px;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+      animation: boostPulse 0.4s infinite alternate;
+    }
+    @keyframes boostPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    .action-buttons {
+      margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    }
+    .action-buttons button {
+      padding: 10px 20px; font-size: 15px; font-weight: bold;
+      border: 2px solid #2a6a7a; border-radius: 8px; cursor: pointer;
+    }
+    .action-buttons .new-race { background: #2a6a7a; color: white; }
+    .action-buttons .new-race:hover { background: #1a4a5a; }
+    .action-buttons .new-track { background: #d89a00; border-color: #d89a00; color: white; }
+    .action-buttons .new-track:hover { background: #a87600; border-color: #a87600; }
+    .action-buttons .sound-toggle { background: white; color: #2a6a7a; }
+    .action-buttons .sound-toggle:hover { background: #e8f4f8; }
+
+    .best-time-badge {
+      margin-top: 10px; font-size: 15px;
+      background: #fff8e0; border: 2px solid #d89a00; color: #8a6000;
+      padding: 6px 16px; border-radius: 16px; font-weight: bold;
+    }
+
+    .controls {
+      margin-top: 20px; background: white;
+      border: 2px solid #2a6a7a; border-radius: 12px;
+      padding: 20px 30px; width: 760px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .controls h2 { margin: 0 0 15px 0; color: #2a6a7a; text-align: center; }
+    .control-grid {
+      display: grid; grid-template-columns: 180px 1fr 80px;
+      gap: 12px 16px; align-items: center;
+    }
+    .control-grid label { font-weight: bold; color: #2a4a5a; }
+    .control-grid input[type="range"] { width: 100%; }
+    .control-grid input[type="color"] {
+      width: 60px; height: 32px;
+      border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
+    }
+    .value-display {
+      font-family: "Courier New", monospace; font-weight: bold;
+      color: #2a6a7a; text-align: right;
+    }
+    .section-divider {
+      grid-column: 1 / -1; border-top: 1px dashed #ccc;
+      margin: 8px 0 4px 0; padding-top: 8px;
+      font-size: 13px; color: #888; text-align: center; font-style: italic;
+    }
+    .presets {
+      margin-top: 20px; display: flex; justify-content: center;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .presets button {
+      padding: 10px 18px; font-size: 15px; font-weight: bold;
+      border: 2px solid #2a6a7a; background: white; color: #2a6a7a;
+      border-radius: 8px; cursor: pointer;
+    }
+    .presets button:hover { background: #2a6a7a; color: white; }
+    .presets button.star {
+      border-color: #d89a00; color: #8a6000; background: #fff8e0;
+    }
+    .presets button.star:hover { background: #d89a00; color: white; }
+  </style>
+</head>
+<body>
+  <h1>🏖️ Cobie's Beach Racer 🏁</h1>
+
+  <div class="mode-selector">
+    <button id="mode-2p" class="active">🤝 2 Players</button>
+    <button id="mode-cpu">🤖 Vs Computer</button>
+  </div>
+
+  <!-- Best-of-3 series score -->
+  <div class="series-bar">
+    <span class="race-label">Race <span id="raceNumber">1</span> of 3</span>
+    <span class="score">
+      <span class="p1">🩵 <span id="p1SeriesScore">0</span></span>
+      &nbsp;—&nbsp;
+      <span class="p2" id="p2SeriesLabel">💖 <span id="p2SeriesScore">0</span></span>
+    </span>
+  </div>
+
+  <div class="top-info">
+    <div class="lives-display">
+      <span class="p1">🩵 P1</span><span class="hearts" id="p1Lives">❤️❤️❤️</span>
+    </div>
+    <div class="race-timer" id="raceTimerDisplay">⏱️ 0.0s</div>
+    <div class="lives-display">
+      <span class="p2" id="p2LivesLabel">💖 P2</span><span class="hearts" id="p2Lives">❤️❤️❤️</span>
+    </div>
+  </div>
+
+  <div class="game-wrapper">
+    <canvas id="game" width="800" height="500"></canvas>
+    <div class="game-over" id="gameOverOverlay">
+      <div class="game-over-box">
+        <h2 id="gameOverTitle">💥 Game Over!</h2>
+        <p id="gameOverMessage"></p>
+        <div class="final-time" id="gameOverTime"></div>
+        <div id="newBestBadge" class="new-best" style="display:none;">🎉 NEW BEST TIME!</div>
+        <div id="seriesUpdate" class="series-update"></div>
+        <div>
+          <button id="playAgainBtn">🏁 Next Race</button>
+          <button id="newSeriesBtn" class="secondary" style="display:none;">🔄 New Series</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="instructions" id="instructionsBox"></div>
+
+  <div class="speed-display">
+    <span>
+      <span class="p1">P1 Speed:</span> <span id="p1Speed">0.0</span>
+      <span id="p1BoostBadge" style="display:none;" class="boost-badge">⭐ BOOST!</span>
+    </span>
+    <span>
+      <span class="p2" id="p2Label">P2 Speed:</span> <span id="p2Speed">0.0</span>
+      <span id="p2BoostBadge" style="display:none;" class="boost-badge">⭐ BOOST!</span>
+    </span>
+  </div>
+
+  <div class="best-time-badge">🏆 Best time ever: <span id="bestTimeDisplay">—</span></div>
+
+  <div class="action-buttons">
+    <button class="new-race" id="newGameBtn">🔄 New Race</button>
+    <button class="new-track" id="newTrackBtn">🎲 New Track</button>
+    <button class="sound-toggle" id="soundToggleBtn">🔊 Sound: On</button>
+  </div>
+
+  <div class="controls">
+    <h2>🔧 Tweak the cars!</h2>
+    <div class="control-grid">
+      <label for="p1ColourPicker"><span class="p1">P1</span> car colour</label>
+      <input type="color" id="p1ColourPicker" value="#00fffb">
+      <div class="value-display" id="p1ColourValue">#00fffb</div>
+
+      <label for="p2ColourPicker"><span class="p2">P2</span> car colour</label>
+      <input type="color" id="p2ColourPicker" value="#ff2d9c">
+      <div class="value-display" id="p2ColourValue">#ff2d9c</div>
+
+      <div class="section-divider">Both cars share the same physics (fair race!)</div>
+
+      <label for="topSpeedSlider">Top speed</label>
+      <input type="range" id="topSpeedSlider" min="1" max="12" step="0.5" value="12">
+      <div class="value-display" id="topSpeedValue">12.0</div>
+
+      <label for="accelSlider">How quick to speed up</label>
+      <input type="range" id="accelSlider" min="0.02" max="0.3" step="0.01" value="0.30">
+      <div class="value-display" id="accelValue">0.30</div>
+
+      <label for="brakeSlider">Braking strength</label>
+      <input type="range" id="brakeSlider" min="0.05" max="0.5" step="0.01" value="0.27">
+      <div class="value-display" id="brakeValue">0.27</div>
+
+      <label for="turnSlider">Turning tightness</label>
+      <input type="range" id="turnSlider" min="0.01" max="0.15" step="0.005" value="0.150">
+      <div class="value-display" id="turnValue">0.150</div>
+
+      <label for="frictionSlider">Slipperiness</label>
+      <input type="range" id="frictionSlider" min="0.90" max="1.00" step="0.002" value="0.948">
+      <div class="value-display" id="frictionValue">0.948</div>
+    </div>
+
+    <div class="presets">
+      <button id="preset-cobie" class="star">🌟 Cobie's way</button>
+      <button id="preset-normal">🏖️ Normal</button>
+      <button id="preset-ice">🧊 Ice mode</button>
+      <button id="preset-zoom">🚀 Zoom mode</button>
+      <button id="preset-tank">🚜 Tank mode</button>
+    </div>
+  </div>
+
+
+  <script>
+  // ============================================================
+  // COBIE'S BEACH RACER — STAGE 7 (POLISH!)
+  // ============================================================
+  //
+  // What's new from Stage 6:
+  //   - 🔊 SOUND EFFECTS — crash thump, star chime, boost whoosh,
+  //     countdown beeps, finish fanfare!
+  //   - 🏆 BEST-OF-3 SERIES — win 2 races to take the trophy.
+  //     Score tracked at the top of the screen.
+  //   - 🌴 PROPER PALM TREES with leafy fronds.
+  //   - ⏱️ YOUR BEST TIME EVER is saved (in the browser) — beat it
+  //     and see "NEW BEST!" celebration!
+  //
+  // This is the finished game! 🎉
+  // ============================================================
+
+
+  // ---- Physics ------------------------------------------------
+  const settings = {
+    topSpeed: 12, acceleration: 0.30, brakePower: 0.27,
+    turnSpeed: 0.150, friction: 0.948
+  };
+
+  const ROAD_WIDTH     = 140;
+  const FINISH_LINE_X  = 750;
+  const CAR_RADIUS     = 18;
+  const OFF_ROAD_SPEED = 0.35;
+  const STAR_RADIUS       = 14;
+  const STAR_PICKUP_RADIUS = 28;
+  const BOOST_DURATION    = 120;
+  const BOOST_MULTIPLIER  = 1.5;
+
+
+  let track = null;
+
+
+  // ---- Cars ---------------------------------------------------
+  const player1 = {
+    x: 0, y: 0, angle: 0, speed: 0, colour: "#00fffb",
+    lives: 3, invulnTimer: 0, finished: false, finishTime: 0, boostTimer: 0
+  };
+  const player2 = {
+    x: 0, y: 0, angle: 0, speed: 0, colour: "#ff2d9c",
+    lives: 3, invulnTimer: 0, finished: false, finishTime: 0, boostTimer: 0
+  };
+
+
+  // ---- Race + series state ------------------------------------
+  let raceState      = "countdown";
+  let countdownTimer = 240;
+  let lastCountdownTick = 0;   // track ticks so we only beep once per second
+  let raceTimer      = 0;
+  let finalRaceTime  = 0;
+  let gameMode       = "2players";
+
+  // Best-of-3 series
+  const series = {
+    p1Wins: 0,
+    p2Wins: 0,
+    raceNumber: 1,
+    over: false
+  };
+
+  const crashMarkers = [];
+  const particles    = [];
+
+
+  // ============================================================
+  //   🔊 SOUND EFFECTS (Web Audio)
+  // ============================================================
+  // We make our own sounds from scratch using oscillators —
+  // no audio files needed! An oscillator is like a digital
+  // "tone generator" — give it a frequency and it beeps.
+
+  let audioCtx = null;
+  let soundOn = true;
+
+  function initAudio() {
+    if (audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { audioCtx = null; }
+  }
+
+  // Wake up audio on first user click (most browsers require this)
+  function unlockAudio() {
+    initAudio();
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  // Play a short beep with given pitch, duration, shape, and volume
+  function beep(freq, duration, type = "sine", volume = 0.15) {
+    if (!soundOn || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = volume;
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }
+
+  // Specific sound effects
+  function soundCountdownBeep() { beep(440, 0.1, "square", 0.15); }
+  function soundGo()            { beep(880, 0.3, "square", 0.18); }
+  function soundCrash() {
+    beep(90, 0.25, "sawtooth", 0.25);
+    setTimeout(() => beep(60, 0.18, "sawtooth", 0.18), 60);
+  }
+  function soundStar() {
+    beep(880, 0.08, "sine", 0.22);
+    setTimeout(() => beep(1318, 0.12, "sine", 0.22), 60);
+  }
+  function soundBoost() {
+    // Ramp frequency up for a "whoosh"
+    if (!soundOn || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.25);
+    gain.gain.value = 0.2;
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+  }
+  function soundFinish() {
+    // Quick fanfare: C-E-G major triad
+    beep(523, 0.15, "triangle", 0.2);
+    setTimeout(() => beep(659, 0.15, "triangle", 0.2), 130);
+    setTimeout(() => beep(784, 0.35, "triangle", 0.22), 260);
+  }
+  function soundSeriesWin() {
+    // Longer fanfare
+    beep(523, 0.12, "triangle", 0.2);
+    setTimeout(() => beep(659, 0.12, "triangle", 0.2), 120);
+    setTimeout(() => beep(784, 0.12, "triangle", 0.2), 240);
+    setTimeout(() => beep(1047, 0.4, "triangle", 0.24), 360);
+  }
+
+
+  // ---- Canvas and keys ----------------------------------------
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  const keys = {};
+  window.addEventListener("keydown", e => {
+    if (e.target.tagName === "INPUT") return;
+    keys[e.key] = true;
+    if (e.key.startsWith("Arrow")) e.preventDefault();
+  });
+  window.addEventListener("keyup", e => { keys[e.key] = false; });
+  function keyDown(k) {
+    return keys[k] || keys[k.toUpperCase()] || keys[k.toLowerCase()];
+  }
+
+
+  // ============================================================
+  //   TRACK GENERATION
+  // ============================================================
+
+  function generateTrack() {
+    const controlCount = 5;
+    const controlPoints = [];
+    let y = 300;
+    for (let i = 0; i < controlCount; i++) {
+      const x = (i / (controlCount - 1)) * canvas.width;
+      controlPoints.push({ x, y });
+      y += (Math.random() - 0.5) * 180;
+      if (y < 210) y = 210 + Math.random() * 30;
+      if (y > 420) y = 420 - Math.random() * 30;
+    }
+    controlPoints[0].y = 300;
+
+    const centerLine = [];
+    const steps = 80;
+    for (let i = 0; i <= steps; i++) {
+      const x = (i / steps) * canvas.width;
+      const t = (i / steps) * (controlCount - 1);
+      const idx = Math.min(Math.floor(t), controlCount - 2);
+      const f = t - idx;
+      const p1 = controlPoints[idx];
+      const p2 = controlPoints[idx + 1];
+      const smoothF = 0.5 - 0.5 * Math.cos(f * Math.PI);
+      const y = p1.y + (p2.y - p1.y) * smoothF;
+      centerLine.push({ x, y });
+    }
+
+    const palmCount = 3 + Math.floor(Math.random() * 2);
+    const palms = [];
+    for (let i = 0; i < palmCount; i++) {
+      const x = 180 + Math.random() * 400;
+      const centerY = centerLineYAt(centerLine, x);
+      const side = Math.random() < 0.5 ? -1 : 1;
+      palms.push({
+        x, y: centerY + side * (15 + Math.random() * 40),
+        radius: 25,
+        rotation: Math.random() * Math.PI * 2   // random leaf orientation
+      });
+    }
+
+    const stars = [];
+    const starCount = 4 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < starCount; i++) {
+      const x = 160 + (i + 0.5) * (500 / starCount) + (Math.random() - 0.5) * 40;
+      const centerY = centerLineYAt(centerLine, x);
+      const offset = (Math.random() - 0.5) * 80;
+      const sx = x;
+      const sy = centerY + offset;
+      let tooClose = false;
+      for (const palm of palms) {
+        if (Math.hypot(sx - palm.x, sy - palm.y) < 55) { tooClose = true; break; }
+      }
+      if (!tooClose) stars.push({ x: sx, y: sy, collected: false, angle: Math.random() * Math.PI });
+    }
+
+    return { centerLine, palms, stars };
+  }
+
+  function centerLineYAt(line, x) {
+    if (x <= line[0].x)               return line[0].y;
+    if (x >= line[line.length - 1].x) return line[line.length - 1].y;
+    for (let i = 0; i < line.length - 1; i++) {
+      if (line[i].x <= x && line[i + 1].x >= x) {
+        const t = (x - line[i].x) / (line[i + 1].x - line[i].x);
+        return line[i].y + (line[i + 1].y - line[i].y) * t;
+      }
+    }
+    return line[line.length - 1].y;
+  }
+
+  function isOnRoad(x, y) {
+    if (!track) return true;
+    const centerY = centerLineYAt(track.centerLine, x);
+    return Math.abs(y - centerY) <= ROAD_WIDTH / 2;
+  }
+
+
+  // ============================================================
+  //   CAR PHYSICS
+  // ============================================================
+
+  function getEffectiveTopSpeed(car) {
+    return car.boostTimer > 0 ? settings.topSpeed * BOOST_MULTIPLIER : settings.topSpeed;
+  }
+
+  function updatePlayer(car, controls) {
+    const topSpeed = getEffectiveTopSpeed(car);
+    if (keyDown(controls.up)) {
+      car.speed += settings.acceleration;
+      if (car.speed > topSpeed) car.speed = topSpeed;
+    }
+    if (keyDown(controls.down)) {
+      car.speed -= settings.brakePower;
+      if (car.speed < -topSpeed / 2) car.speed = -topSpeed / 2;
+    }
+    if (Math.abs(car.speed) > 0.1) {
+      if (keyDown(controls.left))  car.angle -= settings.turnSpeed;
+      if (keyDown(controls.right)) car.angle += settings.turnSpeed;
+    }
+
+    car.speed *= settings.friction;
+    applyOffRoadPenalty(car);
+    car.x += Math.cos(car.angle) * car.speed;
+    car.y += Math.sin(car.angle) * car.speed;
+    keepOnScreen(car);
+    if (car.boostTimer > 0) car.boostTimer--;
+  }
+
+  function applyOffRoadPenalty(car) {
+    if (!isOnRoad(car.x, car.y)) {
+      const maxOffRoad = getEffectiveTopSpeed(car) * OFF_ROAD_SPEED;
+      if (car.speed >  maxOffRoad) car.speed = maxOffRoad;
+      if (car.speed < -maxOffRoad) car.speed = -maxOffRoad;
+    }
+  }
+
+  function keepOnScreen(car) {
+    if (car.x < 20)                 car.x = 20;
+    if (car.x > canvas.width  - 20) car.x = canvas.width  - 20;
+    if (car.y < 100)                car.y = 100;
+    if (car.y > canvas.height - 20) car.y = canvas.height - 20;
+  }
+
+
+  function updateComputerCar(car) {
+    const lookAheadX = Math.min(car.x + 120, canvas.width);
+    let targetX = lookAheadX;
+    let targetY = centerLineYAt(track.centerLine, lookAheadX);
+
+    for (const star of track.stars) {
+      if (star.collected) continue;
+      const distAhead = star.x - car.x;
+      if (distAhead > 20 && distAhead < 180 && Math.abs(star.y - targetY) < 60) {
+        targetX = star.x;
+        targetY = star.y;
+        break;
+      }
+    }
+
+    for (const palm of track.palms) {
+      const distAhead = palm.x - car.x;
+      if (distAhead > 0 && distAhead < 160) {
+        const yDiff = palm.y - targetY;
+        if (Math.abs(yDiff) < 55) {
+          const roadCenter = centerLineYAt(track.centerLine, palm.x);
+          const aboveSpace = palm.y - (roadCenter - ROAD_WIDTH / 2);
+          const belowSpace = (roadCenter + ROAD_WIDTH / 2) - palm.y;
+          if (aboveSpace > belowSpace) targetY = palm.y - 50;
+          else                         targetY = palm.y + 50;
+        }
+      }
+    }
+
+    const dx = targetX - car.x;
+    const dy = targetY - car.y;
+    const targetAngle = Math.atan2(dy, dx);
+    let angleDiff = targetAngle - car.angle;
+    while (angleDiff >  Math.PI) angleDiff -= 2 * Math.PI;
+    while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+    const topSpeed = getEffectiveTopSpeed(car);
+    if (car.speed < topSpeed * 0.9) {
+      car.speed += settings.acceleration;
+      if (car.speed > topSpeed) car.speed = topSpeed;
+    }
+    if (Math.abs(car.speed) > 0.1) {
+      if (angleDiff < -0.04) car.angle -= settings.turnSpeed;
+      else if (angleDiff > 0.04) car.angle += settings.turnSpeed;
+    }
+
+    car.speed *= settings.friction;
+    applyOffRoadPenalty(car);
+    car.x += Math.cos(car.angle) * car.speed;
+    car.y += Math.sin(car.angle) * car.speed;
+    keepOnScreen(car);
+    if (car.boostTimer > 0) car.boostTimer--;
+  }
+
+
+  function checkStarCollection(car) {
+    for (const star of track.stars) {
+      if (star.collected) continue;
+      const d = Math.hypot(car.x - star.x, car.y - star.y);
+      if (d < CAR_RADIUS + STAR_PICKUP_RADIUS) {
+        star.collected = true;
+        car.boostTimer = BOOST_DURATION;
+        addSparkleBurst(star.x, star.y);
+        soundStar();
+        soundBoost();
+      }
+    }
+  }
+
+  function checkCollisions(car, trackLives) {
+    if (car.invulnTimer > 0) { car.invulnTimer--; return; }
+    for (const palm of track.palms) {
+      const dx = car.x - palm.x;
+      const dy = car.y - palm.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const minDistance = CAR_RADIUS + palm.radius;
+      if (distance < minDistance) {
+        const pushAmount = minDistance - distance + 5;
+        const nx = dx / (distance || 1);
+        const ny = dy / (distance || 1);
+        car.x += nx * pushAmount;
+        car.y += ny * pushAmount;
+        car.speed = -settings.topSpeed * 0.3;
+        addCrashMarker(car.x, car.y);
+        soundCrash();
+        if (trackLives) {
+          car.lives--;
+          car.invulnTimer = 90;
+          updateLivesDisplay();
+        } else {
+          car.invulnTimer = 30;
+        }
+        break;
+      }
+    }
+  }
+
+  function addCrashMarker(x, y) { crashMarkers.push({ x, y, age: 0 }); }
+
+  function drawCrashMarkers() {
+    for (let i = crashMarkers.length - 1; i >= 0; i--) {
+      const m = crashMarkers[i];
+      m.age++;
+      if (m.age >= 30) { crashMarkers.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = 1 - (m.age / 30);
+      ctx.font = "bold 40px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("💥", m.x, m.y - m.age);
+      ctx.restore();
+    }
+  }
+
+
+  // ---- Sparkle particles --------------------------------------
+  function addSparkleBurst(x, y) {
+    for (let i = 0; i < 14; i++) {
+      const angle = (i / 14) * Math.PI * 2;
+      const speed = 2 + Math.random() * 3;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        age: 0, life: 25 + Math.random() * 15,
+        colour: Math.random() < 0.5 ? "#ffd700" : "#fff"
+      });
+    }
+  }
+
+  function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vx *= 0.92; p.vy *= 0.92;
+      p.age++;
+      if (p.age >= p.life) particles.splice(i, 1);
+    }
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.save();
+      ctx.globalAlpha = 1 - (p.age / p.life);
+      ctx.fillStyle = p.colour;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3 + (1 - p.age / p.life) * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+
+  function checkFinishLine() {
+    if (!player1.finished && player1.x >= FINISH_LINE_X) {
+      player1.finished = true;
+      player1.finishTime = raceTimer;
+      soundFinish();
+    }
+    if (!player2.finished && player2.x >= FINISH_LINE_X) {
+      player2.finished = true;
+      player2.finishTime = raceTimer;
+      if (gameMode === "2players") soundFinish();
+    }
+  }
+
+
+  // ============================================================
+  //   DRAWING
+  // ============================================================
+
+  function drawBeachBackdrop() {
+    ctx.fillStyle = "#f4e4bc";
+    ctx.fillRect(0, 80, canvas.width, canvas.height - 80);
+    ctx.fillStyle = "#5fb3d4";
+    ctx.fillRect(0, 0, canvas.width, 80);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 75, canvas.width, 4);
+  }
+
+  function drawRoad() {
+    ctx.save();
+    ctx.strokeStyle = "#c9a56b";
+    ctx.lineWidth = ROAD_WIDTH;
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(track.centerLine[0].x, track.centerLine[0].y);
+    for (let i = 1; i < track.centerLine.length; i++) {
+      ctx.lineTo(track.centerLine[i].x, track.centerLine[i].y);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(120, 90, 40, 0.3)";
+    ctx.lineWidth = ROAD_WIDTH + 4;
+    ctx.globalCompositeOperation = "destination-over";
+    ctx.beginPath();
+    ctx.moveTo(track.centerLine[0].x, track.centerLine[0].y);
+    for (let i = 1; i < track.centerLine.length; i++) {
+      ctx.lineTo(track.centerLine[i].x, track.centerLine[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([15, 15]);
+    ctx.beginPath();
+    ctx.moveTo(track.centerLine[0].x, track.centerLine[0].y);
+    for (let i = 1; i < track.centerLine.length; i++) {
+      ctx.lineTo(track.centerLine[i].x, track.centerLine[i].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStartGrid() {
+    const startY = centerLineYAt(track.centerLine, 20);
+    const yTop = startY - ROAD_WIDTH / 2;
+    const yBot = startY + ROAD_WIDTH / 2;
+    for (let y = yTop; y < yBot; y += 20) {
+      for (let x = 25; x < 55; x += 15) {
+        const onBlack = (Math.floor((x - 25)/15) + Math.floor((y - yTop)/20)) % 2 === 0;
+        ctx.fillStyle = onBlack ? "#222" : "white";
+        ctx.fillRect(x, y, 15, 20);
+      }
+    }
+  }
+
+  function drawFinishLine() {
+    const centerY = centerLineYAt(track.centerLine, FINISH_LINE_X);
+    const yTop = centerY - ROAD_WIDTH / 2;
+    const yBot = centerY + ROAD_WIDTH / 2;
+    for (let y = yTop; y < yBot; y += 15) {
+      for (let x = FINISH_LINE_X - 10; x < FINISH_LINE_X + 20; x += 15) {
+        const onBlack = (Math.floor((x - (FINISH_LINE_X - 10))/15) + Math.floor((y - yTop)/15)) % 2 === 0;
+        ctx.fillStyle = onBlack ? "#222" : "white";
+        ctx.fillRect(x, y, 15, 15);
+      }
+    }
+    ctx.font = "bold 28px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("🏁", FINISH_LINE_X + 5, yTop - 8);
+  }
+
+  // NICER PALMS! Proper leaves with fronds radiating out.
+  function drawPalms() {
+    for (const palm of track.palms) {
+      // Shadow on the sand
+      ctx.save();
+      ctx.fillStyle = "rgba(80, 60, 20, 0.25)";
+      ctx.beginPath();
+      ctx.ellipse(palm.x + 3, palm.y + 5, palm.radius * 0.9, palm.radius * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Fronds — 7 leafy triangles rotating out from centre
+      ctx.save();
+      ctx.translate(palm.x, palm.y);
+      ctx.rotate(palm.rotation);
+      const frondCount = 7;
+      for (let i = 0; i < frondCount; i++) {
+        ctx.save();
+        ctx.rotate((i / frondCount) * Math.PI * 2);
+        // Each frond: a leaf-shaped triangle (dark green)
+        ctx.fillStyle = "#2a7a3a";
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(-3, -palm.radius * 0.5, -6, -palm.radius);
+        ctx.quadraticCurveTo(0, -palm.radius - 2, 6, -palm.radius);
+        ctx.quadraticCurveTo(3, -palm.radius * 0.5, 0, 0);
+        ctx.closePath();
+        ctx.fill();
+        // Leaf highlight (lighter green line down the middle)
+        ctx.strokeStyle = "#4a9a4a";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -palm.radius);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Central coconut cluster — three small brown circles
+      ctx.fillStyle = "#6b4a2a";
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * 4, Math.sin(a) * 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  function drawStars() {
+    for (const star of track.stars) {
+      if (star.collected) continue;
+      star.angle += 0.04;
+
+      // Glow
+      ctx.save();
+      ctx.translate(star.x, star.y);
+      const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, 22);
+      glow.addColorStop(0, "rgba(255, 230, 100, 0.6)");
+      glow.addColorStop(1, "rgba(255, 230, 100, 0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(star.x, star.y);
+      ctx.rotate(star.angle);
+      ctx.fillStyle = "#ffd700";
+      ctx.strokeStyle = "#b8860b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? STAR_RADIUS : STAR_RADIUS * 0.45;
+        const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+        const x = Math.cos(a) * r, y = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawCar(car) {
+    if (car.invulnTimer > 0 && Math.floor(car.invulnTimer / 6) % 2 === 0) return;
+
+    if (car.boostTimer > 0) {
+      for (let i = 3; i >= 1; i--) {
+        ctx.save();
+        ctx.globalAlpha = (car.boostTimer / BOOST_DURATION) * (0.4 - i * 0.08);
+        ctx.translate(car.x - Math.cos(car.angle) * i * 12, car.y - Math.sin(car.angle) * i * 12);
+        ctx.rotate(car.angle);
+        ctx.fillStyle = "#ffd700";
+        ctx.fillRect(-20, -12, 40, 24);
+        ctx.restore();
+      }
+    }
+
+    ctx.save();
+    ctx.translate(car.x, car.y);
+    ctx.rotate(car.angle);
+    ctx.fillStyle = car.colour;
+    ctx.fillRect(-20, -12, 40, 24);
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.fillRect(2, -8, 10, 16);
+    ctx.fillStyle = "#222";
+    ctx.fillRect(-15, -15, 8, 4);
+    ctx.fillRect(7, -15, 8, 4);
+    ctx.fillRect(-15, 11, 8, 4);
+    ctx.fillRect(7, 11, 8, 4);
+    ctx.restore();
+  }
+
+  function drawCountdown() {
+    if (raceState !== "countdown") return;
+    let text;
+    if      (countdownTimer > 180) text = "3";
+    else if (countdownTimer > 120) text = "2";
+    else if (countdownTimer >  60) text = "1";
+    else                           text = "GO!";
+
+    // Play beep at start of each second
+    const second = Math.floor(countdownTimer / 60);
+    if (second !== lastCountdownTick && countdownTimer < 240) {
+      lastCountdownTick = second;
+      if (text === "GO!") soundGo();
+      else                soundCountdownBeep();
+    }
+
+    const phase = countdownTimer % 60;
+    const scale = 1 + (phase / 60) * 0.3;
+
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(scale, scale);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "bold 140px Arial";
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#2a6a7a";
+    ctx.fillStyle   = text === "GO!" ? "#00e070" : "white";
+    ctx.strokeText(text, 0, 0);
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
+
+
+  // ---- Displays -----------------------------------------------
+  function updateLivesDisplay() {
+    document.getElementById("p1Lives").textContent =
+      "❤️".repeat(Math.max(0, player1.lives)) + "🖤".repeat(Math.max(0, 3 - player1.lives));
+    const p2LivesEl = document.getElementById("p2Lives");
+    const p2LivesLabel = document.getElementById("p2LivesLabel");
+    if (gameMode === "cpu") {
+      p2LivesEl.textContent = "∞";
+      p2LivesLabel.innerHTML = "🤖 CPU";
+      p2LivesLabel.className = "";
+    } else {
+      p2LivesEl.textContent =
+        "❤️".repeat(Math.max(0, player2.lives)) + "🖤".repeat(Math.max(0, 3 - player2.lives));
+      p2LivesLabel.textContent = "💖 P2";
+      p2LivesLabel.className = "p2";
+    }
+  }
+
+  function updateBoostBadges() {
+    document.getElementById("p1BoostBadge").style.display = player1.boostTimer > 0 ? "inline-block" : "none";
+    document.getElementById("p2BoostBadge").style.display = player2.boostTimer > 0 ? "inline-block" : "none";
+  }
+
+  function updateSeriesDisplay() {
+    document.getElementById("raceNumber").textContent = series.raceNumber;
+    document.getElementById("p1SeriesScore").textContent = series.p1Wins;
+    document.getElementById("p2SeriesScore").textContent = series.p2Wins;
+    // P2 label swaps to CPU in computer mode
+    const p2Label = document.getElementById("p2SeriesLabel");
+    if (gameMode === "cpu") {
+      p2Label.innerHTML = '🤖 <span id="p2SeriesScore">' + series.p2Wins + '</span>';
+      p2Label.classList.remove("p2");
+    } else {
+      p2Label.innerHTML = '💖 <span id="p2SeriesScore">' + series.p2Wins + '</span>';
+      p2Label.classList.add("p2");
+    }
+  }
+
+
+  // ---- Best time (saved in browser) ---------------------------
+  const BEST_TIME_KEY = "cobieBeachRacerBestTime";
+
+  function loadBestTime() {
+    const saved = localStorage.getItem(BEST_TIME_KEY);
+    return saved ? parseFloat(saved) : null;
+  }
+
+  function saveBestTime(time) {
+    localStorage.setItem(BEST_TIME_KEY, String(time));
+  }
+
+  function updateBestTimeDisplay() {
+    const best = loadBestTime();
+    document.getElementById("bestTimeDisplay").textContent = best ? best.toFixed(1) + "s" : "—";
+  }
+
+
+  // ---- End of race logic --------------------------------------
+  function checkRaceEnd() {
+    if (raceState !== "racing") return;
+    if (gameMode === "cpu") {
+      if (player1.finished || player2.finished || player1.lives <= 0) endRace();
+    } else {
+      const p1Done = player1.finished || player1.lives <= 0;
+      const p2Done = player2.finished || player2.lives <= 0;
+      if ((p1Done && p2Done) || player1.finished || player2.finished) endRace();
+    }
+  }
+
+  function endRace() {
+    raceState = "finished";
+    finalRaceTime = raceTimer;
+    const timeSecs = finalRaceTime / 60;
+
+    // Who won this race?
+    let p1WonRace = false, p2WonRace = false;
+    if (player1.finished && player2.finished) {
+      if (player1.finishTime <= player2.finishTime) p1WonRace = true;
+      else                                          p2WonRace = true;
+    } else if (player1.finished) {
+      p1WonRace = true;
+    } else if (player2.finished) {
+      p2WonRace = true;
+    } else if (player1.lives <= 0 && player2.lives > 0) {
+      p2WonRace = true;
+    } else if (player2.lives <= 0 && player1.lives > 0) {
+      p1WonRace = true;
+    }
+
+    // Update series score
+    if (p1WonRace) series.p1Wins++;
+    else if (p2WonRace) series.p2Wins++;
+
+    // Check for NEW BEST TIME (only for P1 when they actually finished)
+    let isNewBest = false;
+    if (player1.finished) {
+      const best = loadBestTime();
+      if (best === null || timeSecs < best) {
+        saveBestTime(timeSecs);
+        isNewBest = true;
+        updateBestTimeDisplay();
+      }
+    }
+
+    // Determine race result text
+    let title = "", message = "";
+    if (gameMode === "cpu") {
+      if (p1WonRace) { title = "🩵 You win the race! 🏆"; message = "Great driving!"; }
+      else if (p2WonRace) { title = "🤖 The Computer wins!"; message = "Better luck next race!"; }
+      else { title = "💥 Crashed Out!"; message = "Ran out of lives!"; }
+    } else {
+      if (player1.finished && player2.finished) {
+        if (player1.finishTime < player2.finishTime)      title = "🩵 Player 1 wins the race!";
+        else if (player2.finishTime < player1.finishTime) title = "💖 Player 2 wins the race!";
+        else                                              title = "🤝 Photo finish!";
+        message = "Both made it across!";
+      } else if (p1WonRace) { title = "🩵 Player 1 wins the race!"; message = "First to the line!"; }
+      else if (p2WonRace)   { title = "💖 Player 2 wins the race!"; message = "First to the line!"; }
+      else                  { title = "💥 Double crash!"; message = "Nobody made it!"; }
+    }
+
+    // Is the SERIES over? (Someone has 2 wins)
+    series.over = (series.p1Wins >= 2 || series.p2Wins >= 2);
+
+    // Build the overlay
+    document.getElementById("gameOverTitle").textContent = title;
+    document.getElementById("gameOverMessage").textContent = message;
+    document.getElementById("gameOverTime").textContent = "Time: " + timeSecs.toFixed(1) + "s";
+    document.getElementById("newBestBadge").style.display = isNewBest ? "inline-block" : "none";
+
+    const seriesUpdate = document.getElementById("seriesUpdate");
+    if (series.over) {
+      if (series.p1Wins >= 2) {
+        seriesUpdate.innerHTML = `🏆 <b>${gameMode === "cpu" ? "You win" : "Player 1 wins"} the series ${series.p1Wins}–${series.p2Wins}!</b> 🏆`;
+      } else {
+        seriesUpdate.innerHTML = `🏆 <b>${gameMode === "cpu" ? "The Computer wins" : "Player 2 wins"} the series ${series.p2Wins}–${series.p1Wins}!</b> 🏆`;
+      }
+      document.getElementById("playAgainBtn").textContent = "🏁 New Series";
+      document.getElementById("newSeriesBtn").style.display = "none";
+      soundSeriesWin();
+    } else {
+      seriesUpdate.innerHTML = `Series: <b>${series.p1Wins}–${series.p2Wins}</b> &nbsp; Race <b>${series.raceNumber + 1} of 3</b> next!`;
+      document.getElementById("playAgainBtn").textContent = "🏁 Next Race";
+      document.getElementById("newSeriesBtn").style.display = "inline-block";
+    }
+
+    document.getElementById("gameOverOverlay").classList.add("visible");
+    updateSeriesDisplay();
+  }
+
+
+  function hideGameOver() {
+    document.getElementById("gameOverOverlay").classList.remove("visible");
+  }
+
+
+  // ---- Mode, races, series ------------------------------------
+  const instructionsBox = document.getElementById("instructionsBox");
+  const p2Label = document.getElementById("p2Label");
+
+  function setMode(newMode) {
+    gameMode = newMode;
+    document.getElementById("mode-2p").classList.toggle("active",  newMode === "2players");
+    document.getElementById("mode-cpu").classList.toggle("active", newMode === "cpu");
+    if (newMode === "2players") {
+      instructionsBox.innerHTML = `
+        <div><span class="p1">🩵 Player 1:</span> ↑ ↓ ← → &nbsp;·&nbsp; <span class="p2">💖 Player 2:</span> W A S D</div>
+        <div>⭐ <b>Drive over stars for a speed boost!</b></div>
+      `;
+      p2Label.textContent = "P2 Speed:";
+    } else {
+      instructionsBox.innerHTML = `
+        <div><span class="p1">🩵 Player 1:</span> ↑ ↓ ← → arrow keys</div>
+        <div>⭐ <b>Drive over stars for a speed boost!</b></div>
+      `;
+      p2Label.textContent = "🤖 CPU Speed:";
+    }
+    startNewSeries();
+  }
+
+  // Start a brand new series (wipe the score)
+  function startNewSeries() {
+    series.p1Wins = 0;
+    series.p2Wins = 0;
+    series.raceNumber = 1;
+    series.over = false;
+    startNextRace();
+  }
+
+  // Set up the next race in the series (or just reset if starting fresh)
+  function startNextRace() {
+    const startY = centerLineYAt(track.centerLine, 60);
+    player1.x = 60; player1.y = startY - 30;
+    player2.x = 60; player2.y = startY + 30;
+
+    player1.angle = 0; player1.speed = 0;
+    player1.lives = 3; player1.invulnTimer = 0;
+    player1.finished = false; player1.finishTime = 0;
+    player1.boostTimer = 0;
+
+    player2.angle = 0; player2.speed = 0;
+    player2.lives = 3; player2.invulnTimer = 0;
+    player2.finished = false; player2.finishTime = 0;
+    player2.boostTimer = 0;
+
+    for (const star of track.stars) star.collected = false;
+
+    crashMarkers.length = 0;
+    particles.length = 0;
+    raceState = "countdown";
+    countdownTimer = 240;
+    lastCountdownTick = 5;  // force beep on first tick
+    raceTimer = 0;
+
+    hideGameOver();
+    updateLivesDisplay();
+    updateSeriesDisplay();
+  }
+
+  // "Next Race" button behaviour
+  function onPlayAgain() {
+    unlockAudio();
+    if (series.over) {
+      startNewSeries();
+    } else {
+      series.raceNumber++;
+      startNextRace();
+    }
+  }
+
+  function newTrack() {
+    unlockAudio();
+    track = generateTrack();
+    startNewSeries();
+  }
+
+  document.getElementById("mode-2p").addEventListener("click",  () => { unlockAudio(); setMode("2players"); });
+  document.getElementById("mode-cpu").addEventListener("click", () => { unlockAudio(); setMode("cpu"); });
+  document.getElementById("newGameBtn").addEventListener("click",  () => { unlockAudio(); startNewSeries(); });
+  document.getElementById("newTrackBtn").addEventListener("click", newTrack);
+  document.getElementById("playAgainBtn").addEventListener("click", onPlayAgain);
+  document.getElementById("newSeriesBtn").addEventListener("click", () => { unlockAudio(); startNewSeries(); });
+
+  // Sound on/off toggle
+  const soundToggleBtn = document.getElementById("soundToggleBtn");
+  soundToggleBtn.addEventListener("click", () => {
+    unlockAudio();
+    soundOn = !soundOn;
+    soundToggleBtn.textContent = soundOn ? "🔊 Sound: On" : "🔇 Sound: Off";
+  });
+
+
+  // ---- Sliders & colour pickers -------------------------------
+  function wireSlider(sliderId, valueId, settingKey, decimals) {
+    const slider = document.getElementById(sliderId);
+    const display = document.getElementById(valueId);
+    slider.addEventListener("input", () => {
+      const v = parseFloat(slider.value);
+      settings[settingKey] = v;
+      display.textContent = v.toFixed(decimals);
+    });
+  }
+  wireSlider("topSpeedSlider", "topSpeedValue", "topSpeed",     1);
+  wireSlider("accelSlider",    "accelValue",    "acceleration", 2);
+  wireSlider("brakeSlider",    "brakeValue",    "brakePower",   2);
+  wireSlider("turnSlider",     "turnValue",     "turnSpeed",    3);
+  wireSlider("frictionSlider", "frictionValue", "friction",     3);
+
+  const p1ColourPicker = document.getElementById("p1ColourPicker");
+  const p1ColourValue  = document.getElementById("p1ColourValue");
+  p1ColourPicker.addEventListener("input", () => {
+    player1.colour = p1ColourPicker.value;
+    p1ColourValue.textContent = p1ColourPicker.value;
+  });
+  const p2ColourPicker = document.getElementById("p2ColourPicker");
+  const p2ColourValue  = document.getElementById("p2ColourValue");
+  p2ColourPicker.addEventListener("input", () => {
+    player2.colour = p2ColourPicker.value;
+    p2ColourValue.textContent = p2ColourPicker.value;
+  });
+
+  const presets = {
+    cobie:  { topSpeed: 12, acceleration: 0.30, brakePower: 0.27, turnSpeed: 0.150, friction: 0.948 },
+    normal: { topSpeed: 4,  acceleration: 0.10, brakePower: 0.20, turnSpeed: 0.050, friction: 0.980 },
+    ice:    { topSpeed: 5,  acceleration: 0.08, brakePower: 0.10, turnSpeed: 0.030, friction: 0.995 },
+    zoom:   { topSpeed: 10, acceleration: 0.25, brakePower: 0.35, turnSpeed: 0.080, friction: 0.970 },
+    tank:   { topSpeed: 2,  acceleration: 0.05, brakePower: 0.40, turnSpeed: 0.035, friction: 0.920 }
+  };
+  function applyPreset(name) {
+    const p = presets[name];
+    document.getElementById("topSpeedSlider").value = p.topSpeed;
+    document.getElementById("accelSlider").value    = p.acceleration;
+    document.getElementById("brakeSlider").value    = p.brakePower;
+    document.getElementById("turnSlider").value     = p.turnSpeed;
+    document.getElementById("frictionSlider").value = p.friction;
+    ["topSpeedSlider","accelSlider","brakeSlider","turnSlider","frictionSlider"]
+      .forEach(id => document.getElementById(id).dispatchEvent(new Event("input")));
+  }
+  document.getElementById("preset-cobie").addEventListener("click",  () => applyPreset("cobie"));
+  document.getElementById("preset-normal").addEventListener("click", () => applyPreset("normal"));
+  document.getElementById("preset-ice").addEventListener("click",    () => applyPreset("ice"));
+  document.getElementById("preset-zoom").addEventListener("click",   () => applyPreset("zoom"));
+  document.getElementById("preset-tank").addEventListener("click",   () => applyPreset("tank"));
+
+
+  // ---- GAME LOOP ----------------------------------------------
+  const p1SpeedDisplay = document.getElementById("p1Speed");
+  const p2SpeedDisplay = document.getElementById("p2Speed");
+  const raceTimerDisplay = document.getElementById("raceTimerDisplay");
+
+  const p1Controls = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" };
+  const p2Controls = { up: "w",       down: "s",         left: "a",         right: "d"         };
+
+  function gameLoop() {
+    if (raceState === "countdown") {
+      countdownTimer--;
+      if (countdownTimer <= 0) {
+        raceState = "racing";
+        raceTimer = 0;
+      }
+    }
+
+    if (raceState === "racing") {
+      raceTimer++;
+      updatePlayer(player1, p1Controls);
+      if (gameMode === "2players") updatePlayer(player2, p2Controls);
+      else                         updateComputerCar(player2);
+      checkCollisions(player1, true);
+      checkCollisions(player2, gameMode === "2players");
+      checkStarCollection(player1);
+      checkStarCollection(player2);
+      checkFinishLine();
+      checkRaceEnd();
+    }
+
+    updateParticles();
+
+    drawBeachBackdrop();
+    drawRoad();
+    drawStartGrid();
+    drawFinishLine();
+    drawPalms();
+    drawStars();
+    drawCar(player1);
+    drawCar(player2);
+    drawCrashMarkers();
+    drawParticles();
+    drawCountdown();
+
+    p1SpeedDisplay.textContent = Math.abs(player1.speed).toFixed(1);
+    p2SpeedDisplay.textContent = Math.abs(player2.speed).toFixed(1);
+    raceTimerDisplay.textContent = "⏱️ " + (raceTimer / 60).toFixed(1) + "s";
+    updateBoostBadges();
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // ---- Kick off -----------------------------------------------
+  track = generateTrack();
+  updateBestTimeDisplay();
+  setMode("2players");
+  gameLoop();
+
+  </script>
+</body>
+</html>

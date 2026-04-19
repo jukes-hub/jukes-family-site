@@ -615,6 +615,14 @@ const TOOLS = [
     url: '/maths-grid.html',
   },
   {
+    name: 'Beach Racer 🏁',
+    description: "Cobie's two-player beach racing game — arrow keys & WASD, random tracks, collect stars for a speed boost",
+    icon: '🏎️',
+    url: '/games/beach-racer/',
+    buttonLabel: '🏎️ Play Beach Racer',
+    buttonBg: C.text,
+  },
+  {
     name: 'Epilog',
     description: 'Read, Rate, Remember',
     icon: '📖',
@@ -653,7 +661,7 @@ function OverAndAbovePage() {
                 rel="noreferrer"
                 style={{
                   display: 'inline-block',
-                  background: C.nav,
+                  background: t.buttonBg || C.nav,
                   color: 'white',
                   padding: '11px 24px',
                   borderRadius: 10,
@@ -665,7 +673,7 @@ function OverAndAbovePage() {
                   textAlign: 'center',
                 }}
               >
-                Open →
+                {t.buttonLabel || 'Open →'}
               </a>
             </div>
           </div>
