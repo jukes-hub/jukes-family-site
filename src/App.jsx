@@ -616,7 +616,7 @@ const TOOLS = [
   },
   {
     name: 'Beach Racer 🏁',
-    description: "Cobie's two-player beach racing game — arrow keys & WASD, random tracks, collect stars for a speed boost",
+    description: "Cobie's two player racing game",
     icon: '🏎️',
     url: '/games/beach-racer/',
   },
